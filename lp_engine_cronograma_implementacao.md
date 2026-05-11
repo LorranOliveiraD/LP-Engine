@@ -21,7 +21,7 @@
 - [x] **Dia 6 (Segunda):** Modelagem do Prisma (`schema.prisma`) e tipagens Zod. Criar migrações iniciais.
 - [x] **Dia 7 (Terça):** Setup do Fastify e testes unitários (Vitest). Garantir cobertura inicial antes das rotas complexas.
 - [x] **Dia 8 (Quarta):** Desenvolvimento da rota de Intake (Briefings) em TDD (Test-Driven Development).
-- [ ] **Dia 9 (Quinta):** Rotas CRUD de Clientes. Criação de endpoints documentados (Swagger/OpenAPI).
+- [x] **Dia 9 (Quinta):** Rotas CRUD de Clientes. Criação de endpoints documentados (Swagger/OpenAPI).
 - [ ] **Dia 10 (Sexta):** Refinar o Pipeline CI/CD. Adicionar o job de `pnpm test` e `pnpm lint` como bloqueio para merges na branch principal.
 
 ---
