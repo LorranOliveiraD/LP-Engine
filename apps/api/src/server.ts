@@ -1,6 +1,7 @@
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
+import { briefingRoutes } from './routes/briefings'
 
 export const app = Fastify({
   logger: true
@@ -9,6 +10,9 @@ export const app = Fastify({
 // Plugins de segurança
 app.register(cors, { origin: '*' })
 app.register(helmet)
+
+// Rotas do sistema
+app.register(briefingRoutes)
 
 // Rota de Health Check (Monitoramento)
 app.get('/health', async () => {
