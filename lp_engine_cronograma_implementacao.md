@@ -7,11 +7,11 @@
 ## 🏗️ Semana 1: Fundação, Terraform & Infra AWS (Dias 1 a 5)
 *Objetivo: Estabelecer a infraestrutura de rede e servidores como código, antes de qualquer lógica.*
 
-- [ ] **Dia 1 (Segunda):** Setup do repositório, Monorepo com Turborepo. Configuração inicial do estado remoto do Terraform (S3 Backend).
+- [x] **Dia 1 (Segunda):** Setup do repositório, Monorepo com Turborepo. Configuração inicial do estado remoto do Terraform (S3 Backend).
 - [ ] **Dia 2 (Terça):** **IaC (Terraform):** Escrever o `main.tf` definindo a VPC, Subnets Públicas/Privadas e Security Groups na AWS.
 - [ ] **Dia 3 (Quarta):** **IaC (Terraform):** Provisionar o RDS (PostgreSQL Free Tier) e uma instância EC2 (t2.micro) no Terraform.
-- [ ] **Dia 4 (Quinta):** Setup de Containers. Criar `docker-compose.yml` para desenvolvimento local contendo Postgres, Redis, Prometheus e Grafana.
-- [ ] **Dia 5 (Sexta):** **CI/CD Inicial:** Criar pipeline no GitHub Actions para rodar `terraform plan` em Pull Requests e validação básica do código.
+- [x] **Dia 4 (Quinta):** Setup de Containers. Criar `docker-compose.yml` para desenvolvimento local contendo Postgres, Redis, Prometheus e Grafana.
+- [x] **Dia 5 (Sexta):** **CI/CD Inicial:** Criar pipeline no GitHub Actions para rodar `terraform plan` em Pull Requests e validação básica do código.
 
 ---
 
