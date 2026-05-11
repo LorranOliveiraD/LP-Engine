@@ -3,7 +3,6 @@ import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
 import swagger from '@fastify/swagger'
 import swaggerUi from '@fastify/swagger-ui'
-import { serializerCompiler, validatorCompiler, jsonSchemaTransform } from 'fastify-type-provider-zod'
 
 import { briefingRoutes } from './routes/briefings'
 import { clientRoutes } from './routes/clients'
@@ -11,10 +10,6 @@ import { clientRoutes } from './routes/clients'
 export const app = Fastify({
   logger: true
 })
-
-// Setup do Zod Provider (Ponte entre Fastify, Zod e Swagger)
-app.setValidatorCompiler(validatorCompiler)
-app.setSerializerCompiler(serializerCompiler)
 
 // Plugins de segurança
 app.register(cors, { origin: '*' })
@@ -28,8 +23,7 @@ app.register(swagger, {
       description: 'Documentação Oficial do Sistema Autônomo de Geração de Landing Pages',
       version: '1.0.0'
     },
-  },
-  transform: jsonSchemaTransform,
+  }
 })
 
 app.register(swaggerUi, {

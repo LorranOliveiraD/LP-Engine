@@ -44,9 +44,6 @@ importers:
       fastify:
         specifier: ^5.8.5
         version: 5.8.5
-      fastify-type-provider-zod:
-        specifier: ^5.0.0
-        version: 5.0.0(@fastify/swagger@9.7.0)(fastify@5.8.5)(zod@3.23.8)
       zod:
         specifier: ^3.23.8
         version: 3.23.8
@@ -779,13 +776,6 @@ packages:
 
   fastify-plugin@5.1.0:
     resolution: {integrity: sha512-FAIDA8eovSt5qcDgcBvDuX/v0Cjz0ohGhENZ/wpc3y+oZCY2afZ9Baqql3g/lC+OHRnciQol4ww7tuthOb9idw==}
-
-  fastify-type-provider-zod@5.0.0:
-    resolution: {integrity: sha512-dYXfyT6T3XGEjR1Kq4V7mVP3QtSgYnCHmqunOSrKsl7RVS40ys2Yllxl3BbQTYEY7g8RNOMW7L3v/EOOblDXqg==}
-    peerDependencies:
-      '@fastify/swagger': '>=9.5.1'
-      fastify: ^5.0.0
-      zod: '>=3.25.56'
 
   fastify@5.8.5:
     resolution: {integrity: sha512-Yqptv59pQzPgQUSIm87hMqHJmdkb1+GPxdE6vW6FRyVE9G86mt7rOghitiU4JHRaTyDUk9pfeKmDeu70lAwM4Q==}
@@ -1772,13 +1762,6 @@ snapshots:
   fast-uri@3.1.2: {}
 
   fastify-plugin@5.1.0: {}
-
-  fastify-type-provider-zod@5.0.0(@fastify/swagger@9.7.0)(fastify@5.8.5)(zod@3.23.8):
-    dependencies:
-      '@fastify/error': 4.2.0
-      '@fastify/swagger': 9.7.0
-      fastify: 5.8.5
-      zod: 3.23.8
 
   fastify@5.8.5:
     dependencies:
