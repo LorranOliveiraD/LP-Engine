@@ -18,7 +18,7 @@
     "@lp-engine/schemas": "workspace:*",
     "dotenv": "^16.4.5",
     "fastify": "^5.8.5",
-    "fastify-type-provider-zod": "^6.1.0",
+    "fastify-type-provider-zod": "^5.0.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
