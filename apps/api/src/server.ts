@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
@@ -17,12 +18,14 @@ app.register(helmet)
 
 // Setup da Documentação da API (Swagger/OpenAPI)
 app.register(swagger, {
-  openapi: {
+  swagger: {
     info: {
       title: 'LP Engine API',
       description: 'Documentação Oficial do Sistema Autônomo de Geração de Landing Pages',
       version: '1.0.0'
     },
+    consumes: ['application/json'],
+    produces: ['application/json']
   }
 })
 

@@ -39,7 +39,7 @@ importers:
         specifier: workspace:*
         version: link:../../packages/schemas
       dotenv:
-        specifier: ^16.4.5
+        specifier: ^16.6.1
         version: 16.6.1
       fastify:
         specifier: ^5.8.5

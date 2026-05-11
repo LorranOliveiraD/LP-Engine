@@ -3,7 +3,23 @@ import { ClientSchema } from '@lp-engine/schemas'
 import { prisma } from '@lp-engine/database'
 
 export async function clientRoutes(app: FastifyInstance) {
-  app.post('/clients', async (request, reply) => {
+  app.post('/clients', {
+    schema: {
+      tags: ['Clientes'],
+      summary: 'Cadastrar um novo cliente',
+      consumes: ['application/json'],
+      produces: ['application/json'],
+      body: {
+        type: 'object',
+        required: ['name', 'email', 'niche'],
+        properties: {
+          name: { type: 'string' },
+          email: { type: 'string' },
+          niche: { type: 'string' }
+        }
+      }
+    }
+  }, async (request, reply) => {
     // Usando validação manual e segura do Zod (sem conflito de bibliotecas)
     const parsed = ClientSchema.safeParse(request.body)
     
