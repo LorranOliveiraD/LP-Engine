@@ -1,0 +1,107 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector]
+}
+
+enum ClientStatus {
+  LEAD
+  NEGOCIACAO
+  FECHADO
+}
+
+model Client {
+  id        String       @id @default(uuid())
+  name      String
+  email     String       @unique
+  niche     String
+  status    ClientStatus @default(LEAD)
+  metadata  Json?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  briefings Briefing[]
+
+  @@map("clients")
+}
+
+enum BriefingType {
+  SERVICO
+  ECOMMERCE
+  SAAS
+  EVENTO
+  PORTFOLIO
+}
+
+enum BriefingStatus {
+  PENDING
+  INTAKE
+  ENRICHING
+  GENERATING
+  ASSEMBLING
+  DEPLOYING
+  PREVIEW_READY
+  PUBLISHED
+  FAILED
+}
+
+model Briefing {
+  id          String         @id @default(uuid())
+  clientId    String
+  client      Client         @relation(fields: [clientId], references: [id])
+  type        BriefingType
+  objective   String
+  status      BriefingStatus @default(PENDING)
+  jobId       String?        // BullMQ tracking
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  landingPage LandingPage?
+
+  @@map("briefings")
+}
+
+enum PageStatus {
+  DRAFT
+  PREVIEW
+  REVIEW
+  APPROVED
+  PUBLISHED
+  ARCHIVED
+}
+
+model LandingPage {
+  id         String     @id @default(uuid())
+  briefingId String     @unique
+  briefing   Briefing   @relation(fields: [briefingId], references: [id])
+  version    Int        @default(1)
+  content    Json?      // JSON estruturado gerado pela IA
+  htmlOutput String?    // HTML renderizado final
+  previewUrl String?    // URL do Cloudflare
+  status     PageStatus @default(DRAFT)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@map("landing_pages")
+}
+
+enum EmbeddingSource {
+  TEMPLATE
+  COPY
+  BENCHMARK
+}
+
+model Embedding {
+  id         String          @id @default(uuid())
+  content    String
+  // Vector com 768 dimensoes para parear com o modelo de embedding do Gemini
+  embedding  Unsupported("vector(768)")? 
+  sourceType EmbeddingSource
+  metadata   Json?
+  createdAt  DateTime        @default(now())
+
+  @@map("embeddings")
+}
