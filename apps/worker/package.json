@@ -1,0 +1,20 @@
+{
+  "name": "@lp-engine/worker",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/worker.ts",
+    "start": "node dist/worker.js",
+    "lint": "eslint src/"
+  },
+  "dependencies": {
+    "@lp-engine/database": "workspace:*",
+    "@lp-engine/queue": "workspace:*",
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "tsx": "^4.7.1",
+    "typescript": "^5.4.2"
+  }
+}

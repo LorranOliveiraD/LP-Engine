@@ -29,7 +29,7 @@
 ## 🚦 Semana 3: Mensageria e Observabilidade (Dias 11 a 15)
 *Objetivo: Lidar com o processamento assíncrono e ter visibilidade do que acontece por baixo dos panos.*
 
-- [ ] **Dia 11 (Segunda):** Setup do BullMQ e Redis. Separar a API do processo Worker (`worker.ts`).
+- [x] **Dia 11 (Segunda):** Setup do BullMQ e Redis. Separar a API do processo Worker (`worker.ts`).
 - [ ] **Dia 12 (Terça):** Produtor/Consumidor de Briefings. Garantir que o job vai para a fila corretamente.
 - [ ] **Dia 13 (Quarta):** **Observabilidade (Prometheus):** Adicionar exportador de métricas à API e ao Worker (medir tamanho da fila, latência de requests).
 - [ ] **Dia 14 (Quinta):** **Logs Estruturados:** Configurar o Winston para gerar logs em formato JSON, rastreando o `jobId` em todas as etapas.

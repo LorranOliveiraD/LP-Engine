@@ -12,6 +12,8 @@ export const BriefingSchema = z.object({
   clientId: z.string().uuid("ID do cliente inválido"),
   type: z.enum(["SERVICO", "ECOMMERCE", "SAAS", "EVENTO", "PORTFOLIO"]),
   objective: z.string().min(10, "O objetivo da landing page deve ser bem detalhado (mín. 10 chars)"),
+  targetAudience: z.string().min(5, "Descreva o público-alvo"),
+  tone: z.enum(["FORMAL", "CASUAL", "TECNICO", "INSPIRACIONAL"]),
 })
 
 export type CreateBriefingDTO = z.infer<typeof BriefingSchema>
