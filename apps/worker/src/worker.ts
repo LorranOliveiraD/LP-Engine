@@ -15,8 +15,8 @@ const worker = new Worker<BriefingJobData>(
     console.log(`   → Cliente: ${clientId}`)
     console.log(`   → Objetivo: ${objective}`)
 
-    // Por enquanto simulamos o trabalho com um delay (a IA virá na Semana 4)
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    // Simulação do trabalho pesado (a IA Gemini virá na Semana 4)
+    console.log(`   → Simulando processamento assíncrono...`)
 
     // Atualiza o status do briefing no banco de dados
     await prisma.briefing.update({

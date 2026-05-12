@@ -18,6 +18,11 @@ export default [
         module: "readonly",
         __dirname: "readonly",
         console: "readonly",
+        setTimeout: "readonly",
+        clearTimeout: "readonly",
+        setInterval: "readonly",
+        clearInterval: "readonly",
+        Buffer: "readonly",
       },
     },
     plugins: {
