@@ -33,14 +33,14 @@
 - [x] **Dia 12 (Terça):** Produtor/Consumidor de Briefings. Garantir que o job vai para a fila corretamente.
 - [x] **Dia 13 (Quarta):** **Observabilidade (Prometheus):** Adicionar exportador de métricas à API e ao Worker (medir tamanho da fila, latência de requests).
 - [x] **Dia 14 (Quinta):** **Logs Estruturados:** Configurar o Winston para gerar logs em formato JSON, rastreando o `jobId` em todas as etapas.
-- [x] **Dia 15 (Sexta):** **Dashboards (Grafana):** Criar um dashboard local no Grafana que leia as métricas do Prometheus e exiba a saúde das filas e da API.
+- [ ] **Dia 15 (Sexta):** **Dashboards (Grafana):** Criar um dashboard local no Grafana que leia as métricas do Prometheus e exiba a saúde das filas e da API.
 
 ---
 
 ## 🧠 Semana 4: IA & MCP com Gemini Flash (Dias 16 a 20)
 *Objetivo: Integrar o modelo do Google de forma profissional e escalável usando RAG.*
 
-- [ ] **Dia 16 (Segunda):** Habilitar `pgvector` e criar scripts para popular o banco com embeddings (LPs de teste).
+- [x] **Dia 16 (Segunda):** Habilitar `pgvector` e criar scripts para popular o banco com embeddings (LPs de teste).
 - [ ] **Dia 17 (Terça):** Integração via API do **Gemini Flash Free**. Testes unitários de prompt.
 - [ ] **Dia 18 (Quarta):** **Servidor MCP:** Implementar o Model Context Protocol, criando as ferramentas (*tools*) de leitura do Postgres para o Gemini.
 - [ ] **Dia 19 (Quinta):** Orquestrar o fluxo no Worker: Fila -> Busca RAG -> Aciona MCP/Gemini -> Retorna JSON Estruturado.
