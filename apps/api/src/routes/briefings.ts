@@ -4,6 +4,7 @@ import { prisma } from '@lp-engine/database'
 import { briefingQueue } from '@lp-engine/queue'
 
 export async function briefingRoutes(app: FastifyInstance) {
+  // ── POST /briefings ──────────────────────────────────────────────
   app.post('/briefings', {
     schema: {
       tags: ['Briefings'],
@@ -14,7 +15,7 @@ export async function briefingRoutes(app: FastifyInstance) {
         type: 'object',
         required: ['clientId', 'type', 'objective', 'targetAudience', 'tone'],
         properties: {
-          clientId: { type: 'string', description: 'UUID do cliente cadastrado (ex: 8c57fe30-d926-4da3-b07d-254e2dc5f869)' },
+          clientId: { type: 'string', description: 'UUID do cliente cadastrado' },
           type: { type: 'string', enum: ['SERVICO', 'ECOMMERCE', 'SAAS', 'EVENTO', 'PORTFOLIO'] },
           objective: { type: 'string', description: 'Objetivo da Landing Page (mín. 10 caracteres)' },
           targetAudience: { type: 'string', description: 'Público-alvo da campanha' },
@@ -23,7 +24,6 @@ export async function briefingRoutes(app: FastifyInstance) {
       }
     }
   }, async (request, reply) => {
-    // 1. O Porteiro (Zod): Valida o payload
     const parsed = BriefingSchema.safeParse(request.body)
 
     if (!parsed.success) {
@@ -37,7 +37,6 @@ export async function briefingRoutes(app: FastifyInstance) {
     const data = parsed.data
 
     try {
-      // 2. O Arquivista (Prisma): Salva no banco de dados com status PENDING
       const briefing = await prisma.briefing.create({
         data: {
           clientId: data.clientId,
@@ -47,8 +46,7 @@ export async function briefingRoutes(app: FastifyInstance) {
         }
       })
 
-      // 3. O Produtor (BullMQ): Publica o job na fila para o Worker processar
-      await briefingQueue.add('process-briefing', {
+      const job = await briefingQueue.add('process-briefing', {
         briefingId: briefing.id,
         clientId: briefing.clientId,
         objective: briefing.objective,
@@ -56,13 +54,72 @@ export async function briefingRoutes(app: FastifyInstance) {
         tone: data.tone,
       })
 
-      app.log.info(`📨 Job adicionado à fila para briefingId: ${briefing.id}`)
+      app.log.info(`📨 Job ${job.id} adicionado à fila para briefingId: ${briefing.id}`)
 
-      // 4. A Resposta: 202 Accepted (imediata — o trabalho pesado é assíncrono)
       return reply.status(202).send({
         status: 'accepted',
         briefingId: briefing.id,
+        jobId: job.id,
         message: 'Briefing recebido e na fila de processamento'
+      })
+    } catch (error) {
+      app.log.error(error)
+      return reply.status(500).send({ error: 'Internal Server Error' })
+    }
+  })
+
+  // ── GET /briefings/:id/status ─────────────────────────────────────
+  app.get('/briefings/:id/status', {
+    schema: {
+      tags: ['Briefings'],
+      summary: 'Consultar o status de processamento de um briefing',
+      produces: ['application/json'],
+      params: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', description: 'UUID do briefing' }
+        }
+      }
+    }
+  }, async (request, reply) => {
+    const { id } = request.params as { id: string }
+
+    try {
+      const briefing = await prisma.briefing.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          status: true,
+          type: true,
+          objective: true,
+          createdAt: true,
+          updatedAt: true,
+          client: {
+            select: { name: true, email: true }
+          }
+        }
+      })
+
+      if (!briefing) {
+        return reply.status(404).send({ error: 'Briefing não encontrado' })
+      }
+
+      const statusMessages: Record<string, string> = {
+        PENDING: 'Briefing na fila, aguardando processamento...',
+        PROCESSING: 'Worker está processando seu briefing agora...',
+        COMPLETED: 'Landing page gerada com sucesso!',
+        FAILED: 'Ocorreu um erro no processamento. Tente novamente.',
+      }
+
+      return reply.send({
+        briefingId: briefing.id,
+        status: briefing.status,
+        message: statusMessages[briefing.status] || 'Status desconhecido',
+        type: briefing.type,
+        objective: briefing.objective,
+        client: briefing.client,
+        createdAt: briefing.createdAt,
+        updatedAt: briefing.updatedAt,
       })
     } catch (error) {
       app.log.error(error)
