@@ -52,6 +52,12 @@ export async function briefingRoutes(app: FastifyInstance) {
         objective: briefing.objective,
         targetAudience: data.targetAudience,
         tone: data.tone,
+      }, {
+        attempts: 5, // Tenta até 5 vezes se a API do Gemini falhar (Rate Limit)
+        backoff: {
+          type: 'exponential',
+          delay: 2000 // Tenta de novo em 2s, depois 4s, 8s, 16s, 32s
+        }
       })
 
       app.log.info(`📨 Job ${job.id} adicionado à fila para briefingId: ${briefing.id}`)

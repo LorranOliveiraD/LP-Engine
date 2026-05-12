@@ -44,7 +44,7 @@
 - [x] **Dia 17 (Terça):** Integração via API do **Gemini Flash Free**. Testes unitários de prompt.
 - [x] **Dia 18 (Quarta):** **Servidor MCP:** Implementar o Model Context Protocol, criando as ferramentas (*tools*) de leitura do Postgres para o Gemini.
 - [x] **Dia 19 (Quinta):** Orquestrar o fluxo no Worker: Fila -> Busca RAG -> Aciona MCP/Gemini -> Retorna JSON Estruturado.
-- [ ] **Dia 20 (Sexta):** Implementar lógicas de Retry e Backoff Exponencial no Worker caso a API do Gemini atinja limites de rate. Adicionar métricas de "Tempo de Geração" ao Prometheus.
+- [x] **Dia 20 (Sexta):** Implementar lógicas de Retry e Backoff Exponencial no Worker caso a API do Gemini atinja limites de rate. Adicionar métricas de "Tempo de Geração" ao Prometheus.
 
 ---
 

@@ -29,3 +29,10 @@ export const briefingJobDurationSeconds = new Histogram({
   buckets: [0.1, 0.5, 1, 2, 5, 10, 30],
   registers: [register],
 })
+
+export const aiGenerationDurationSeconds = new Histogram({
+  name: 'ai_generation_duration_seconds',
+  help: 'Tempo gasto exclusivamente na geração de conteúdo pela IA (Gemini)',
+  buckets: [0.5, 1, 2, 3, 5, 10, 15, 30],
+  registers: [register],
+})

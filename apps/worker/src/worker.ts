@@ -12,6 +12,7 @@ import {
   briefingJobsFailedTotal,
   briefingQueueSize,
   briefingJobDurationSeconds,
+  aiGenerationDurationSeconds,
 } from './metrics'
 
 // Logger raiz do Worker — todos os filhos herdarão o campo "service"
@@ -92,6 +93,7 @@ export async function processBriefingJob(job: Job<BriefingJobData>): Promise<voi
   // Como `job.data.type` não está explicitamente no JobData atual, vamos fazer fallback
   const lpType = (job.data as any).type || 'SERVICO'
 
+  const aiStartTime = Date.now()
   const lpContent = await generateLandingPageContent({
     objective,
     targetAudience,
@@ -99,8 +101,10 @@ export async function processBriefingJob(job: Job<BriefingJobData>): Promise<voi
     type: lpType,
     ragContext
   })
+  const aiDuration = (Date.now() - aiStartTime) / 1000
+  aiGenerationDurationSeconds.observe(aiDuration)
 
-  jobLog.info('Landing Page gerada com sucesso!', { event: 'ai_success' })
+  jobLog.info('Landing Page gerada com sucesso!', { event: 'ai_success', durationSeconds: aiDuration })
 
   // Salva no banco de dados na tabela LandingPage
   await prisma.landingPage.upsert({
