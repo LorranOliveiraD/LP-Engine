@@ -7,10 +7,13 @@ import swaggerUi from '@fastify/swagger-ui'
 
 import { briefingRoutes } from './routes/briefings'
 import { clientRoutes } from './routes/clients'
+import {
+  register,
+  httpRequestsTotal,
+  httpRequestDurationSeconds,
+} from './metrics'
 
-export const app = Fastify({
-  logger: true
-})
+export const app = Fastify({ logger: true })
 
 // Plugins de segurança
 app.register(cors, { origin: '*' })
@@ -29,17 +32,38 @@ app.register(swagger, {
   }
 })
 
-app.register(swaggerUi, {
-  routePrefix: '/docs',
+app.register(swaggerUi, { routePrefix: '/docs' })
+
+// ── Hooks de métricas HTTP ────────────────────────────────────────────────────
+app.addHook('onRequest', async (request) => {
+  request.startTime = Date.now()
+})
+
+app.addHook('onResponse', async (request, reply) => {
+  const duration = (Date.now() - (request.startTime ?? Date.now())) / 1000
+  const route = request.routeOptions?.url ?? request.url
+  const labels = {
+    method: request.method,
+    route,
+    status_code: String(reply.statusCode),
+  }
+  httpRequestsTotal.inc(labels)
+  httpRequestDurationSeconds.observe(labels, duration)
 })
 
 // Rotas do sistema
 app.register(briefingRoutes)
 app.register(clientRoutes)
 
-// Rota de Health Check (Monitoramento)
+// Rota de Health Check
 app.get('/health', async () => {
   return { status: 'ok', message: 'LP Engine API is running' }
+})
+
+// Rota de Métricas (lida pelo Prometheus a cada 15s)
+app.get('/metrics', async (request, reply) => {
+  reply.header('Content-Type', register.contentType)
+  return reply.send(await register.metrics())
 })
 
 const start = async () => {
@@ -52,7 +76,13 @@ const start = async () => {
   }
 }
 
-// Só inicia o servidor se não estiver rodando em ambiente de testes
+// Augment Fastify request type for startTime
+declare module 'fastify' {
+  interface FastifyRequest {
+    startTime?: number
+  }
+}
+
 if (require.main === module) {
   start()
 }
