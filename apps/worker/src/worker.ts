@@ -3,6 +3,10 @@ import { Worker, Job } from 'bullmq'
 import { redisConnection, BRIEFING_QUEUE_NAME, BriefingJobData, briefingQueue } from '@lp-engine/queue'
 import { prisma } from '@lp-engine/database'
 import { createLogger, baseLogger } from '@lp-engine/logger'
+import { generateLandingPageContent } from '@lp-engine/ai'
+import { Client } from '@modelcontextprotocol/sdk/client/index.js'
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
+import path from 'path'
 import {
   briefingJobsProcessedTotal,
   briefingJobsFailedTotal,
@@ -12,6 +16,19 @@ import {
 
 // Logger raiz do Worker — todos os filhos herdarão o campo "service"
 const log = createLogger({ service: 'worker' })
+
+// Inicializa o Cliente MCP apontando para o nosso servidor MCP local
+const mcpTransport = new StdioClientTransport({
+  command: 'npx',
+  args: ['tsx', path.resolve(__dirname, '../../mcp/src/index.ts')]
+})
+const mcpClient = new Client({ name: 'worker-client', version: '1.0.0' }, { capabilities: {} })
+
+mcpClient.connect(mcpTransport).then(() => {
+  log.info('Conectado ao Servidor MCP com sucesso!')
+}).catch((err) => {
+  log.error('Falha ao conectar no Servidor MCP', { error: err.message })
+})
 
 log.info('Worker iniciado', { queue: BRIEFING_QUEUE_NAME })
 
@@ -52,8 +69,53 @@ export async function processBriefingJob(job: Job<BriefingJobData>): Promise<voi
 
   jobLog.info('Status atualizado para PROCESSING', { event: 'status_changed', status: 'PROCESSING' })
 
-  // Simulação do trabalho pesado — a IA Gemini virá na Semana 4
-  jobLog.info('Simulando processamento...', { event: 'processing' })
+  jobLog.info('Buscando referências na base de conhecimento (RAG via MCP)...', { event: 'rag_search' })
+  
+  let ragContext = ''
+  try {
+    const mcpResult = await mcpClient.callTool({
+      name: 'query_knowledge_base',
+      arguments: {
+        query: `${objective} para ${targetAudience} tom ${tone}`,
+        limit: 2
+      }
+    })
+    // Extrai o texto retornado pela ferramenta
+    ragContext = (mcpResult.content[0] as { text: string }).text
+    jobLog.info('Referências recuperadas com sucesso', { event: 'rag_success' })
+  } catch (error: any) {
+    jobLog.warn('Falha ao consultar Servidor MCP, usando RAG vazio', { event: 'rag_error', error: error.message })
+  }
+
+  jobLog.info('Gerando estrutura da Landing Page com Gemini Flash...', { event: 'ai_generation' })
+  
+  // Como `job.data.type` não está explicitamente no JobData atual, vamos fazer fallback
+  const lpType = (job.data as any).type || 'SERVICO'
+
+  const lpContent = await generateLandingPageContent({
+    objective,
+    targetAudience,
+    tone,
+    type: lpType,
+    ragContext
+  })
+
+  jobLog.info('Landing Page gerada com sucesso!', { event: 'ai_success' })
+
+  // Salva no banco de dados na tabela LandingPage
+  await prisma.landingPage.upsert({
+    where: { briefingId },
+    create: {
+      briefingId,
+      content: lpContent,
+      status: 'DRAFT',
+      version: 1
+    },
+    update: {
+      content: lpContent,
+      version: { increment: 1 }
+    }
+  })
 
   await prisma.briefing.update({
     where: { id: briefingId },

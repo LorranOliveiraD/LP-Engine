@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
@@ -32,8 +33,17 @@ async function main() {
   await prisma.$executeRaw`TRUNCATE TABLE "embeddings" RESTART IDENTITY;`
 
   for (const t of mockTemplates) {
-    // Mock de um vetor de 768 dimensões (padrão do Gemini Flash)
-    const mockEmbedding = Array.from({ length: 768 }, () => Math.random() * 2 - 1)
+    // Agora usando a IA real para gerar as coordenadas de significado do texto
+    let mockEmbedding: number[]
+    try {
+      const { generateEmbedding } = require('@lp-engine/ai')
+      mockEmbedding = await generateEmbedding(t.content)
+    } catch (error: any) {
+      console.error('❌ Falha na API do Gemini:', error.message || error)
+      console.warn('⚠️ Fallback: Gerando embedding aleatório. Defina GEMINI_API_KEY para embeddings reais.')
+      mockEmbedding = Array.from({ length: 768 }, () => Math.random() * 2 - 1)
+    }
+
     const embeddingStr = `[${mockEmbedding.join(',')}]`
 
     await prisma.$executeRaw`
@@ -41,6 +51,7 @@ async function main() {
       VALUES (gen_random_uuid(), ${t.content}, ${embeddingStr}::vector, CAST(${t.sourceType} AS "EmbeddingSource"), CAST(${JSON.stringify(t.metadata)} AS jsonb), now())
     `
   }
+
   
   const count = await prisma.$queryRaw`SELECT count(*) FROM "embeddings"`
   

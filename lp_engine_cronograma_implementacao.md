@@ -41,9 +41,9 @@
 *Objetivo: Integrar o modelo do Google de forma profissional e escalável usando RAG.*
 
 - [x] **Dia 16 (Segunda):** Habilitar `pgvector` e criar scripts para popular o banco com embeddings (LPs de teste).
-- [ ] **Dia 17 (Terça):** Integração via API do **Gemini Flash Free**. Testes unitários de prompt.
-- [ ] **Dia 18 (Quarta):** **Servidor MCP:** Implementar o Model Context Protocol, criando as ferramentas (*tools*) de leitura do Postgres para o Gemini.
-- [ ] **Dia 19 (Quinta):** Orquestrar o fluxo no Worker: Fila -> Busca RAG -> Aciona MCP/Gemini -> Retorna JSON Estruturado.
+- [x] **Dia 17 (Terça):** Integração via API do **Gemini Flash Free**. Testes unitários de prompt.
+- [x] **Dia 18 (Quarta):** **Servidor MCP:** Implementar o Model Context Protocol, criando as ferramentas (*tools*) de leitura do Postgres para o Gemini.
+- [x] **Dia 19 (Quinta):** Orquestrar o fluxo no Worker: Fila -> Busca RAG -> Aciona MCP/Gemini -> Retorna JSON Estruturado.
 - [ ] **Dia 20 (Sexta):** Implementar lógicas de Retry e Backoff Exponencial no Worker caso a API do Gemini atinja limites de rate. Adicionar métricas de "Tempo de Geração" ao Prometheus.
 
 ---

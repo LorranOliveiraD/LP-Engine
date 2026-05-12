@@ -1,0 +1,21 @@
+{
+  "name": "@lp-engine/mcp",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "lint": "eslint src/"
+  },
+  "dependencies": {
+    "@lp-engine/ai": "workspace:^",
+    "@lp-engine/database": "workspace:^",
+    "@modelcontextprotocol/sdk": "^1.5.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "tsx": "^4.7.1",
+    "typescript": "^5.4.0"
+  }
+}
