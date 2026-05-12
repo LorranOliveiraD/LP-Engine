@@ -2,6 +2,7 @@ import 'dotenv/config'
 import { Worker, Job } from 'bullmq'
 import { redisConnection, BRIEFING_QUEUE_NAME, BriefingJobData, briefingQueue } from '@lp-engine/queue'
 import { prisma } from '@lp-engine/database'
+import { createLogger, baseLogger } from '@lp-engine/logger'
 import {
   briefingJobsProcessedTotal,
   briefingJobsFailedTotal,
@@ -9,7 +10,10 @@ import {
   briefingJobDurationSeconds,
 } from './metrics'
 
-console.log('🚀 Worker iniciado — aguardando jobs na fila:', BRIEFING_QUEUE_NAME)
+// Logger raiz do Worker — todos os filhos herdarão o campo "service"
+const log = createLogger({ service: 'worker' })
+
+log.info('Worker iniciado', { queue: BRIEFING_QUEUE_NAME })
 
 // Atualiza a métrica de tamanho da fila a cada 10 segundos
 const updateQueueSizeMetric = async () => {
@@ -25,31 +29,45 @@ export async function processBriefingJob(job: Job<BriefingJobData>): Promise<voi
   const startTime = Date.now()
   const { briefingId, clientId, objective, targetAudience, tone } = job.data
 
-  console.log(`⚙️  [Job ${job.id}] Processando briefing: ${briefingId}`)
-  console.log(`   → Cliente ID: ${clientId}`)
-  console.log(`   → Objetivo: ${objective}`)
-  console.log(`   → Público-alvo: ${targetAudience}`)
-  console.log(`   → Tom: ${tone}`)
-  console.log(`   → Tentativa: ${job.attemptsMade + 1}`)
+  // Logger filho: cada log desta função carrega jobId, briefingId e clientId automaticamente
+  const jobLog = createLogger({
+    service: 'worker',
+    jobId: String(job.id),
+    briefingId,
+    clientId,
+  })
+
+  jobLog.info('Job iniciado', {
+    event: 'job_started',
+    attempt: job.attemptsMade + 1,
+    objective,
+    targetAudience,
+    tone,
+  })
 
   await prisma.briefing.update({
     where: { id: briefingId },
     data: { status: 'PROCESSING' }
   })
 
+  jobLog.info('Status atualizado para PROCESSING', { event: 'status_changed', status: 'PROCESSING' })
+
   // Simulação do trabalho pesado — a IA Gemini virá na Semana 4
-  console.log(`   → Simulando processamento assíncrono...`)
+  jobLog.info('Simulando processamento...', { event: 'processing' })
 
   await prisma.briefing.update({
     where: { id: briefingId },
     data: { status: 'COMPLETED' }
   })
 
-  // Registra a duração do job nas métricas
   const durationSeconds = (Date.now() - startTime) / 1000
   briefingJobDurationSeconds.observe(durationSeconds)
 
-  console.log(`✅ [Job ${job.id}] Briefing ${briefingId} concluído em ${durationSeconds.toFixed(2)}s!`)
+  jobLog.info('Job concluído com sucesso', {
+    event: 'job_completed',
+    durationSeconds,
+    status: 'COMPLETED',
+  })
 }
 
 const worker = new Worker<BriefingJobData>(
@@ -59,27 +77,39 @@ const worker = new Worker<BriefingJobData>(
 )
 
 worker.on('completed', (job) => {
-  console.log(`🎉 [Job ${job.id}] Concluído com sucesso!`)
   briefingJobsProcessedTotal.inc()
   updateQueueSizeMetric()
+  log.info('Job finalizado com sucesso pelo Worker', {
+    event: 'worker_completed',
+    jobId: String(job.id),
+  })
 })
 
 worker.on('failed', (job, err) => {
-  console.error(`❌ [Job ${job?.id}] Falhou (tentativa ${job?.attemptsMade}): ${err.message}`)
   briefingJobsFailedTotal.inc()
   updateQueueSizeMetric()
+  log.error('Job falhou', {
+    event: 'job_failed',
+    jobId: String(job?.id),
+    attempt: job?.attemptsMade,
+    error: err.message,
+  })
 
   if (job && job.attemptsMade >= (job.opts.attempts ?? 3)) {
-    console.error(`💀 [Job ${job.id}] Enviado para Dead Letter Queue.`)
+    log.warn('Job esgotou todas as tentativas — movido para Dead Letter Queue', {
+      event: 'job_dlq',
+      jobId: String(job.id),
+      briefingId: job.data.briefingId,
+    })
   }
 })
 
 worker.on('error', (err) => {
-  console.error('🔥 Erro crítico no Worker:', err.message)
+  log.error('Erro crítico no Worker', { event: 'worker_error', error: err.message })
 })
 
 const shutdown = async () => {
-  console.log('🛑 Worker encerrando gracefully...')
+  log.info('Worker encerrando gracefully...', { event: 'shutdown' })
   clearInterval(metricsInterval)
   await worker.close()
   await prisma.$disconnect()
