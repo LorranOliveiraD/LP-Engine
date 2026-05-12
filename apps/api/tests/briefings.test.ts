@@ -2,7 +2,7 @@ import { expect, test, describe, beforeAll, afterAll, vi } from 'vitest'
 import { app } from '../src/server'
 import { prisma } from '@lp-engine/database'
 
-// Fazendo o mock (imitação) do nosso banco de dados Prisma para não poluir o banco real durante os testes
+// Mock do banco de dados
 vi.mock('@lp-engine/database', () => ({
   prisma: {
     briefing: {
@@ -10,6 +10,30 @@ vi.mock('@lp-engine/database', () => ({
     },
   },
 }))
+
+// Mock da fila BullMQ — evita conexão real com Redis nos testes
+vi.mock('@lp-engine/queue', () => ({
+  briefingQueue: {
+    add: vi.fn().mockResolvedValue({ id: 'mock-job-id' }),
+  },
+  briefingQueueEvents: {
+    on: vi.fn(),
+    close: vi.fn(),
+  },
+  redisConnection: {
+    on: vi.fn(),
+    disconnect: vi.fn(),
+    quit: vi.fn(),
+  },
+}))
+
+const validPayload = {
+  clientId: '123e4567-e89b-12d3-a456-426614174000',
+  type: 'SAAS',
+  objective: 'Criar uma landing page incrível para o meu sistema',
+  targetAudience: 'Jovens empreendedores de 20 a 35 anos',
+  tone: 'CASUAL',
+}
 
 describe('POST /briefings - Intake Route', () => {
   beforeAll(async () => {
@@ -25,9 +49,8 @@ describe('POST /briefings - Intake Route', () => {
       method: 'POST',
       url: '/briefings',
       payload: {
-        clientId: '123e4567-e89b-12d3-a456-426614174000',
-        type: 'SAAS',
-        objective: 'curto' // Menos de 10 caracteres propositalmente para o teste
+        ...validPayload,
+        objective: 'curto', // Menos de 10 caracteres propositalmente
       }
     })
 
@@ -41,17 +64,15 @@ describe('POST /briefings - Intake Route', () => {
       method: 'POST',
       url: '/briefings',
       payload: {
+        ...validPayload,
         clientId: 'id-invalido-batata',
-        type: 'SAAS',
-        objective: 'Criar uma landing page incrível para o meu sistema'
       }
     })
 
     expect(response.statusCode).toBe(400)
   })
 
-  test('Deve retornar 202 Accepted e salvar no banco quando o payload for válido', async () => {
-    // Simulando que o Prisma salvou com sucesso e devolveu um ID
+  test('Deve retornar 202 Accepted e publicar job na fila quando o payload for válido', async () => {
     vi.mocked(prisma.briefing.create).mockResolvedValue({
       id: 'briefing-123',
       clientId: '123e4567-e89b-12d3-a456-426614174000',
@@ -66,11 +87,7 @@ describe('POST /briefings - Intake Route', () => {
     const response = await app.inject({
       method: 'POST',
       url: '/briefings',
-      payload: {
-        clientId: '123e4567-e89b-12d3-a456-426614174000',
-        type: 'SAAS',
-        objective: 'Criar uma landing page incrível para o meu sistema'
-      }
+      payload: validPayload
     })
 
     expect(response.statusCode).toBe(202)
@@ -81,7 +98,6 @@ describe('POST /briefings - Intake Route', () => {
       message: 'Briefing recebido e na fila de processamento'
     })
 
-    // O Teste garante que a API chamou o banco de dados exatamente 1 vez
     expect(prisma.briefing.create).toHaveBeenCalledTimes(1)
   })
 })
