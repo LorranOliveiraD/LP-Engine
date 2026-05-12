@@ -33,7 +33,7 @@
 - [x] **Dia 12 (Terça):** Produtor/Consumidor de Briefings. Garantir que o job vai para a fila corretamente.
 - [x] **Dia 13 (Quarta):** **Observabilidade (Prometheus):** Adicionar exportador de métricas à API e ao Worker (medir tamanho da fila, latência de requests).
 - [x] **Dia 14 (Quinta):** **Logs Estruturados:** Configurar o Winston para gerar logs em formato JSON, rastreando o `jobId` em todas as etapas.
-- [ ] **Dia 15 (Sexta):** **Dashboards (Grafana):** Criar um dashboard local no Grafana que leia as métricas do Prometheus e exiba a saúde das filas e da API.
+- [x] **Dia 15 (Sexta):** **Dashboards (Grafana):** Criar um dashboard local no Grafana que leia as métricas do Prometheus e exiba a saúde das filas e da API.
 
 ---
 
