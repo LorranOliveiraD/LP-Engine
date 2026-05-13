@@ -1,6 +1,10 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-const key = 'AIzaSyD64gd9tIJ1MoQ4NdaReBP7gKdHRDc4Ktk';
+const key = process.env.GEMINI_API_KEY;
+if (!key) {
+  console.error("ERRO: Variável GEMINI_API_KEY não encontrada.");
+  process.exit(1);
+}
 const genAI = new GoogleGenerativeAI(key);
 
 async function run() {
