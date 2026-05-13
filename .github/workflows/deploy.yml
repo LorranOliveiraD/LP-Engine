@@ -34,9 +34,10 @@ jobs:
             # Cria o arquivo .env para o Docker Compose
             cat <<EOF > .env
             GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
-            DB_USER=genesis
-            DB_PASSWORD=genesis
-            DB_NAME=genesis
+            DB_HOST=${{ secrets.RDS_ENDPOINT }}
+            DB_USER=postgres
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            DB_NAME=postgres
             EOF
             
             # Sobe a stack de produção
