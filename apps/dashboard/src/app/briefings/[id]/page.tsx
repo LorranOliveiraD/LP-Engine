@@ -3,11 +3,22 @@
 import { useEffect, useState, use } from 'react'
 import Link from 'next/link'
 
+interface BriefingData {
+  status: string;
+  message: string;
+  briefingId: string;
+  type: string;
+  objective: string;
+  client?: {
+    name: string;
+  };
+}
+
 export default function BriefingStatus({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = use(params)
   const id = unwrappedParams.id
   
-  const [data, setData] = useState<any>(null)
+  const [data, setData] = useState<BriefingData | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {

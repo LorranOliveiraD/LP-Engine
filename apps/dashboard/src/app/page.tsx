@@ -3,8 +3,19 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
+interface Briefing {
+  id: string;
+  status: string;
+  type: string;
+  objective: string;
+  createdAt: string;
+  client?: {
+    name: string;
+  };
+}
+
 export default function Home() {
-  const [briefings, setBriefings] = useState<any[]>([])
+  const [briefings, setBriefings] = useState<Briefing[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -60,7 +71,7 @@ export default function Home() {
         ) : briefings.length === 0 ? (
           <div style={{ background: 'rgba(255,255,255,0.05)', padding: '3rem', borderRadius: '16px', textAlign: 'center' }}>
             <h3 style={{ marginBottom: '1rem' }}>Nenhum briefing encontrado</h3>
-            <p style={{ color: 'rgba(255,255,255,0.6)' }}>Clique em "Novo Briefing" para criar sua primeira Landing Page com a IA.</p>
+            <p style={{ color: 'rgba(255,255,255,0.6)' }}>Clique em &quot;Novo Briefing&quot; para criar sua primeira Landing Page com a IA.</p>
           </div>
         ) : (
           <div className="grid-layout">
