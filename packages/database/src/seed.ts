@@ -4,7 +4,22 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log('🌱 Iniciando seed de embeddings no banco de dados...')
+  console.log('🌱 Iniciando seed no banco de dados...')
+
+  // Cria cliente de teste padrão para o Dashboard/E2E
+  const testClientId = '8c57fe30-d926-4da3-b07d-254e2dc5f869'
+  await prisma.client.upsert({
+    where: { id: testClientId },
+    update: {},
+    create: {
+      id: testClientId,
+      name: 'Cliente Gênesis Teste',
+      email: 'teste@genesis.com',
+      niche: 'Tecnologia',
+      status: 'FECHADO'
+    }
+  })
+  console.log('✅ Cliente de teste ok.')
 
   const mockTemplates = [
     {

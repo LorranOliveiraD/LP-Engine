@@ -76,7 +76,7 @@ jobs:
         run: pnpm --filter @lp-engine/database exec prisma generate
 
       - name: Aplicar Schema ao Banco de Teste
-        run: pnpm db:push
+        run: pnpm db:push && pnpm --filter @lp-engine/database run db:seed
 
       - name: Rodar todos os testes
         run: pnpm test
@@ -126,7 +126,7 @@ jobs:
         run: pnpm --filter @lp-engine/database exec prisma generate
 
       - name: Aplicar Migrações/Schema ao Banco
-        run: pnpm db:push
+        run: pnpm db:push && pnpm --filter @lp-engine/database run db:seed
 
       - name: Instalar Navegadores do Playwright
         run: pnpm --filter dashboard exec playwright install --with-deps chromium

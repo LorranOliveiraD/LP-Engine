@@ -1,22 +1,48 @@
-'use client'
-
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+
+interface Client {
+  id: string
+  name: string
+}
 
 export default function NewBriefing() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [clients, setClients] = useState<Client[]>([])
   const [formData, setFormData] = useState({
-    clientId: '8c57fe30-d926-4da3-b07d-254e2dc5f869', // ID Real do usuário logado
+    clientId: '',
     type: 'SAAS',
     objective: '',
     targetAudience: '',
     tone: 'TECNICO'
   })
 
+  useEffect(() => {
+    async function loadClients() {
+      try {
+        const res = await fetch('/api/clients')
+        if (res.ok) {
+          const data = await res.json()
+          setClients(data.clients || [])
+          if (data.clients?.length > 0) {
+            setFormData(prev => ({ ...prev, clientId: data.clients[0].id }))
+          }
+        }
+      } catch (err) {
+        console.error('Erro ao carregar clientes:', err)
+      }
+    }
+    loadClients()
+  }, [])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!formData.clientId) {
+      alert('Por favor, selecione um cliente.')
+      return
+    }
     setLoading(true)
 
     try {
@@ -58,6 +84,21 @@ export default function NewBriefing() {
           </p>
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>Cliente</label>
+              <select 
+                required
+                value={formData.clientId} 
+                onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border)', color: 'white' }}
+              >
+                <option value="">Selecione um cliente...</option>
+                {clients.map(client => (
+                  <option key={client.id} value={client.id}>{client.name}</option>
+                ))}
+              </select>
+            </div>
+
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>Tipo de Página</label>
               <select 
