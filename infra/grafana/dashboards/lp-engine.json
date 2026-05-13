@@ -99,7 +99,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 10 },
+      "gridPos": { "h": 6, "w": 4, "x": 0, "y": 10 },
       "id": 3,
       "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto", "textMode": "auto", "colorMode": "background" },
       "targets": [
@@ -121,7 +121,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 10 },
+      "gridPos": { "h": 6, "w": 4, "x": 4, "y": 10 },
       "id": 4,
       "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
       "targets": [
@@ -143,7 +143,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 10 },
+      "gridPos": { "h": 6, "w": 4, "x": 8, "y": 10 },
       "id": 5,
       "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
       "targets": [
@@ -166,17 +166,40 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 10 },
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 10 },
       "id": 6,
       "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } },
       "targets": [
         {
-          "expr": "histogram_quantile(0.99, rate(briefing_job_duration_seconds_bucket[5m]))",
+          "expr": "histogram_quantile(0.99, sum(rate(briefing_job_duration_seconds_bucket[5m])) by (le))",
           "legendFormat": "p99 duração do job",
           "refId": "A"
         }
       ],
       "title": "Duração dos Jobs (p99)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 2, "fillOpacity": 10 },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 10 },
+      "id": 13,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(ai_generation_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "p99 latência Gemini",
+          "refId": "A"
+        }
+      ],
+      "title": "Tempo de Geração IA (p99)",
       "type": "timeseries"
     },
     {

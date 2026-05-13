@@ -4,15 +4,11 @@ const rawKey = process.env.GEMINI_API_KEY || 'dummy_key'
 const apiKey = rawKey.trim()
 const genAI = new GoogleGenerativeAI(apiKey)
 
-// O Gemini Flash é o modelo padrão, perfeito para tarefas rápidas e baratas
-const model = genAI.getGenerativeModel({
-  model: 'gemini-1.5-flash',
-})
+// Usando o modelo descoberto via cURL: gemini-flash-latest
+const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' })
 
-// Modelo de Embeddings
-const embeddingModel = genAI.getGenerativeModel({
-  model: 'text-embedding-004',
-})
+// Modelo de Embeddings padrão
+const embeddingModel = genAI.getGenerativeModel({ model: 'text-embedding-004' })
 
 // Tipagem para os parâmetros de geração de LP
 export interface GenerateLandingPageParams {
@@ -76,12 +72,12 @@ Retorne ESTRITAMENTE o JSON com a estrutura da página.
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
     generationConfig: {
       responseMimeType: 'application/json',
-      responseSchema: landingPageSchema,
-      temperature: 0.7,
+      responseSchema: landingPageSchema
     }
   })
 
-  return JSON.parse(result.response.text())
+  const text = result.response.text()
+  return JSON.parse(text)
 }
 
 /**

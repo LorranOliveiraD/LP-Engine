@@ -26,6 +26,7 @@ export const briefingQueueEvents = new QueueEvents(BRIEFING_QUEUE_NAME, {
 export type BriefingJobData = {
   briefingId: string
   clientId: string
+  type: string
   objective: string
   targetAudience: string
   tone: string

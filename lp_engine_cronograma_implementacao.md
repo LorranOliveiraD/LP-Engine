@@ -51,17 +51,17 @@
 ## 🖥️ Semana 5 e 6: Frontend, Edge & Testes E2E (Dias 21 a 30)
 *Objetivo: Criar a interface de controle e provar seu funcionamento de ponta a ponta.*
 
-- [ ] **Dia 21-23:** Setup do Next.js (Dashboard), telas de acompanhamento de status da LP consumindo a API.
-- [ ] **Dia 24-25:** Integração com Cloudflare (Pages/Workers) para deploy dinâmico do HTML gerado pela IA (Edge Computing).
-- [ ] **Dia 26-28:** **Testes E2E (Playwright):** Criar robôs que simulam a criação de um cliente e um briefing completo pelo painel.
-- [ ] **Dia 29-30:** Adicionar Testes E2E ao pipeline do GitHub Actions para rodarem em paralelo aos testes unitários.
+- [x] **Dia 21-23:** Setup do Next.js (Dashboard), telas de acompanhamento de status da LP consumindo a API.
+- [x] **Dia 24-25:** Integração com Cloudflare (Pages/Workers) para deploy dinâmico do HTML gerado pela IA (Edge Computing).
+- [x] **Dia 26-28 (Segunda-Quarta):** **Testes E2E (Playwright):** Criar robôs que simulam a criação de um cliente e um briefing completo pelo painel.
+- [x] **Dia 29-30 (Quinta-Sexta):** Adicionar Testes E2E ao pipeline do GitHub Actions para rodarem em paralelo aos testes unitários.
 
 ---
 
 ## 🚀 Semana 7 e 8: Deploy HML/PROD e Refinamentos (Dias 31 a 40)
 *Objetivo: Provar a arquitetura na AWS e garantir que o pipeline faz o deploy automático do código limpo.*
 
-- [ ] **Dia 31-33:** Pipeline de CD (Continuous Deployment). Fazer o GitHub Actions atualizar o código na instância EC2 via SSH/Docker ao sofrer merge na `main`.
+- [x] **Dia 31-33:** Pipeline de CD (Continuous Deployment). Fazer o GitHub Actions atualizar o código na instância EC2 via SSH/Docker ao sofrer merge na `main`.
 - [ ] **Dia 34-35:** Configurar a comunicação segura (Security Groups) entre a EC2 e o RDS provisionados pelo Terraform.
 - [ ] **Dia 36-37:** Deploy da stack de Observabilidade na nuvem (Prometheus e Grafana acessíveis via IP/Domínio).
 - [ ] **Dia 38:** Teste de Stress Simulado (Artillery/K6) monitorando os gargalos no Grafana.

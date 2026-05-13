@@ -34,9 +34,9 @@ jobs:
 
   # ─── Job 2: Testes Automatizados (TDD) ────────────────────────────────────
   test:
-    name: 🧪 Testes
+    name: 🧪 Unit/Integration Tests
     runs-on: ubuntu-latest
-    needs: lint  # Só roda se o lint passou
+    needs: lint
     steps:
       - name: Checkout do código
         uses: actions/checkout@v4
@@ -61,11 +61,78 @@ jobs:
       - name: Rodar todos os testes
         run: pnpm test
 
-  # ─── Job 3: Validação do Terraform ────────────────────────────────────────
+  # ─── Job 3: Testes de Ponta a Ponta (E2E) ──────────────────────────────────
+  e2e:
+    name: 🎭 E2E Tests (Playwright)
+    runs-on: ubuntu-latest
+    needs: lint
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: genesis
+          POSTGRES_PASSWORD: genesis
+          POSTGRES_DB: genesis
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+    env:
+      DATABASE_URL: postgresql://genesis:genesis@localhost:5432/genesis?schema=public
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Instalar dependências
+        run: pnpm install --frozen-lockfile
+
+      - name: Gerar Prisma Client
+        run: pnpm --filter @lp-engine/database exec prisma generate
+
+      - name: Aplicar Migrações/Schema ao Banco
+        run: pnpm db:push
+
+      - name: Instalar Navegadores do Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Iniciar API e Worker em Background
+        run: |
+          pnpm --filter @lp-engine/api dev &
+          pnpm --filter @lp-engine/worker dev &
+          sleep 10 # Aguarda inicialização
+
+      - name: Rodar Testes E2E (Dashboard)
+        run: pnpm --filter dashboard exec playwright test
+
+      - name: Upload de Artefatos (Screenshots/Videos em caso de falha)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/dashboard/playwright-report/
+          retention-days: 7
+
+  # ─── Job 4: Validação do Terraform ────────────────────────────────────────
   terraform:
     name: 🏗️ Terraform Plan
     runs-on: ubuntu-latest
-    needs: test  # Só roda se testes passaram
+    needs: [test, e2e]  # Só roda se testes unitários e E2E passaram
     defaults:
       run:
         working-directory: terraform

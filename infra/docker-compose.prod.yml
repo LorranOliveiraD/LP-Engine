@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  # Banco de Dados
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: genesis_postgres_prod
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data_prod:/var/lib/postgresql/data
+    restart: always
+
+  # Redis para Fila
+  redis:
+    image: redis:7-alpine
+    container_name: genesis_redis_prod
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data_prod:/data
+    restart: always
+
+  # API Backend
+  api:
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    container_name: genesis_api_prod
+    environment:
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}?schema=public
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    restart: always
+
+  # Worker de IA
+  worker:
+    build:
+      context: ..
+      dockerfile: apps/worker/Dockerfile
+    container_name: genesis_worker_prod
+    environment:
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}?schema=public
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+    depends_on:
+      - postgres
+      - redis
+    restart: always
+
+  # Dashboard Frontend
+  dashboard:
+    build:
+      context: ..
+      dockerfile: apps/dashboard/Dockerfile
+    container_name: genesis_dashboard_prod
+    environment:
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}?schema=public
+    ports:
+      - "3002:3000"
+    depends_on:
+      - api
+    restart: always
+
+volumes:
+  pg_data_prod:
+  redis_data_prod:

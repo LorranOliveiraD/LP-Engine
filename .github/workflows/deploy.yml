@@ -1,0 +1,46 @@
+name: CD — Deploy to AWS EC2
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    name: 🚀 Deploy to Production
+    runs-on: ubuntu-latest
+    # Garantimos que o deploy só ocorra se o push for na main (redundante mas seguro)
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.AWS_EC2_IP }}
+          username: ubuntu
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # Entra no diretório do projeto ou clona se não existir
+            if [ ! -d "~/lp-engine" ]; then
+              git clone https://github.com/${{ github.repository }}.git ~/lp-engine
+            fi
+            
+            cd ~/lp-engine
+            git fetch origin main
+            git reset --hard origin/main
+            
+            # Cria o arquivo .env para o Docker Compose
+            cat <<EOF > .env
+            GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
+            DB_USER=genesis
+            DB_PASSWORD=genesis
+            DB_NAME=genesis
+            EOF
+            
+            # Sobe a stack de produção
+            docker-compose -f infra/docker-compose.prod.yml up -d --build
+            
+            # Limpa imagens antigas para economizar espaço no Free Tier
+            docker image prune -f

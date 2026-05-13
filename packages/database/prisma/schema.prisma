@@ -97,8 +97,8 @@ enum EmbeddingSource {
 model Embedding {
   id         String          @id @default(uuid())
   content    String
-  // Vector com 768 dimensoes para parear com o modelo de embedding do Gemini
-  embedding  Unsupported("vector(768)")? 
+  // Vector com 3072 dimensoes para parear com o novo modelo de embedding do Gemini
+  embedding  Unsupported("vector(3072)")? 
   sourceType EmbeddingSource
   metadata   Json?
   createdAt  DateTime        @default(now())

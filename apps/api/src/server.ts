@@ -16,8 +16,12 @@ import {
 export const app = Fastify({ logger: true })
 
 // Plugins de segurança
-app.register(cors, { origin: '*' })
-app.register(helmet)
+app.register(cors, { 
+  origin: ['http://127.0.0.1:3002', 'http://localhost:3002'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+})
+// app.register(helmet)
 
 // Setup da Documentação da API (Swagger/OpenAPI)
 app.register(swagger, {
@@ -34,8 +38,8 @@ app.register(swagger, {
 
 app.register(swaggerUi, { routePrefix: '/docs' })
 
-// ── Hooks de métricas HTTP ────────────────────────────────────────────────────
 app.addHook('onRequest', async (request) => {
+  app.log.info({ method: request.method, url: request.url }, 'Requisição recebida')
   request.startTime = Date.now()
 })
 
