@@ -64,8 +64,8 @@ describe('Integração Gemini Flash', () => {
     expect(result).toEqual(mockExpectedJson)
   })
 
-  test('Deve gerar um embedding com 768 dimensões', async () => {
-    const mockVector = Array.from({ length: 768 }, () => 0.5)
+  test('Deve gerar um embedding com 3072 dimensões', async () => {
+    const mockVector = Array.from({ length: 3072 }, () => 0.5)
     
     mockEmbedContent.mockResolvedValue({
       embedding: { values: mockVector }
@@ -73,8 +73,15 @@ describe('Integração Gemini Flash', () => {
 
     const result = await generateEmbedding('Texto de teste')
 
-    expect(mockEmbedContent).toHaveBeenCalledWith('Texto de teste')
-    expect(result).toHaveLength(768)
+    expect(mockEmbedContent).toHaveBeenCalledWith(expect.objectContaining({
+      content: expect.objectContaining({
+        parts: expect.arrayContaining([
+          expect.objectContaining({ text: 'Texto de teste' })
+        ])
+      }),
+      outputDimensionality: 3072
+    }))
+    expect(result).toHaveLength(3072)
     expect(result[0]).toBe(0.5)
   })
 })
