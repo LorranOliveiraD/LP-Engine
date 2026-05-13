@@ -84,11 +84,19 @@ describe('POST /briefings - Intake Route', () => {
     expect(payload.briefingId).toBe('briefing-123')
     expect(payload.jobId).toBe('mock-job-id-123')
 
-    expect(briefingQueue.add).toHaveBeenCalledWith('process-briefing', expect.objectContaining({
-      briefingId: 'briefing-123',
-      targetAudience: 'Jovens empreendedores de 20 a 35 anos',
-      tone: 'CASUAL',
-    }))
+    expect(briefingQueue.add).toHaveBeenCalledWith(
+      'process-briefing',
+      expect.objectContaining({
+        briefingId: 'briefing-123',
+        clientId: '123e4567-e89b-12d3-a456-426614174000',
+        targetAudience: 'Jovens empreendedores de 20 a 35 anos',
+        tone: 'CASUAL',
+      }),
+      expect.objectContaining({
+        attempts: 5,
+        backoff: expect.objectContaining({ type: 'exponential' })
+      })
+    )
   })
 })
 
