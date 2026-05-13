@@ -15,3 +15,8 @@ variable "db_password" {
   type        = string
   sensitive   = true
 }
+
+variable "ssh_key_name" {
+  description = "Name of the SSH key pair"
+  type        = string
+}

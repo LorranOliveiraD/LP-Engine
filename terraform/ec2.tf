@@ -11,7 +11,8 @@ data "aws_ami" "ubuntu" {
 
 resource "aws_instance" "app_server" {
   ami           = data.aws_ami.ubuntu.id
-  instance_type = "t2.micro" # Modalidade Gratuita (Free tier)
+  instance_type = "t3.micro" # Modalidade Gratuita em contas novas
+  key_name      = var.ssh_key_name
 
   subnet_id                   = aws_subnet.public_1.id
   vpc_security_group_ids      = [aws_security_group.ec2_sg.id]
