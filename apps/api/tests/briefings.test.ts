@@ -9,7 +9,12 @@ vi.mock('@lp-engine/database', () => ({
     briefing: {
       create: vi.fn(),
       findUnique: vi.fn(),
+      findMany: vi.fn(),
+      update: vi.fn(),
     },
+    landingPage: {
+      findUnique: vi.fn(),
+    }
   },
 }))
 
@@ -124,10 +129,10 @@ describe('GET /briefings/:id/status - Status Route', () => {
     expect(payload.client.name).toBe('Lucas')
   })
 
-  test('Deve retornar o status COMPLETED com mensagem de sucesso', async () => {
+  test('Deve retornar o status PREVIEW_READY com mensagem de sucesso', async () => {
     vi.mocked(prisma.briefing.findUnique).mockResolvedValue({
       id: 'briefing-789',
-      status: 'COMPLETED',
+      status: 'PREVIEW_READY',
       type: 'ECOMMERCE',
       objective: 'Aumentar vendas no e-commerce',
       createdAt: new Date('2026-05-12T00:00:00Z'),
@@ -142,7 +147,7 @@ describe('GET /briefings/:id/status - Status Route', () => {
 
     expect(response.statusCode).toBe(200)
     const payload = JSON.parse(response.payload)
-    expect(payload.status).toBe('COMPLETED')
+    expect(payload.status).toBe('PREVIEW_READY')
     expect(payload.message).toContain('Landing page gerada com sucesso')
   })
 })
