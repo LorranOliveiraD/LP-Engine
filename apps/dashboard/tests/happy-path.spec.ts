@@ -13,6 +13,12 @@ test.describe('Fluxo Principal de Geração de LP', () => {
     await page.goto('/briefings/new');
 
     // 2. Preenche o formulário
+    // Aguarda o carregamento dos clientes (o select deve ter pelo menos uma opção real além da vazia)
+    const clientSelect = page.locator('select:near(label:has-text("Cliente"))');
+    await clientSelect.waitFor({ state: 'visible' });
+    await page.waitForFunction((sel) => (sel as HTMLSelectElement).options.length > 1, await clientSelect.elementHandle());
+    await clientSelect.selectOption({ index: 1 }); // Seleciona o primeiro cliente real
+
     await page.selectOption('select:near(label:has-text("Tipo de Página"))', 'ECOMMERCE');
     await page.fill('textarea[placeholder*="Vender assinaturas"]', 'Vender um curso de culinária italiana para iniciantes com foco em massas artesanais.');
     await page.fill('input[placeholder*="Empreendedores"]', 'Pessoas interessadas em gastronomia e hobbistas.');
