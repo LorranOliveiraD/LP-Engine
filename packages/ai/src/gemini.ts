@@ -81,9 +81,13 @@ Retorne ESTRITAMENTE o JSON com a estrutura da página.
 }
 
 /**
- * Gera embeddings para um texto. Retorna um array de 768 floats.
+ * Gera embeddings para um texto. Retorna um array de 3072 floats.
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
-  const result = await embeddingModel.embedContent(text)
+  const result = await embeddingModel.embedContent({
+    content: { role: 'user', parts: [{ text }] },
+    taskType: 'RETRIEVAL_DOCUMENT',
+    outputDimensionality: 3072
+  })
   return result.embedding.values
 }

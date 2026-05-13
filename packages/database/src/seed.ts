@@ -55,8 +55,8 @@ async function main() {
       mockEmbedding = await generateEmbedding(t.content)
     } catch (error: any) {
       console.error('❌ Falha na API do Gemini:', error.message || error)
-      console.warn('⚠️ Fallback: Gerando embedding aleatório. Defina GEMINI_API_KEY para embeddings reais.')
-      mockEmbedding = Array.from({ length: 768 }, () => Math.random() * 2 - 1)
+      console.warn('⚠️ Fallback: Gerando embedding aleatório (3072 dim). Defina GEMINI_API_KEY para embeddings reais.')
+      mockEmbedding = Array.from({ length: 3072 }, () => Math.random() * 2 - 1)
     }
 
     const embeddingStr = `[${mockEmbedding.join(',')}]`
