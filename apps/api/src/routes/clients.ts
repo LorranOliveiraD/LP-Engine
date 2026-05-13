@@ -61,6 +61,6 @@ export async function clientRoutes(app: FastifyInstance) {
     const clients = await prisma.client.findMany({
       orderBy: { createdAt: 'desc' }
     })
-    return reply.send(clients)
+    return reply.send({ clients })
   })
 }
