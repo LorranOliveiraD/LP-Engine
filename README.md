@@ -1,4 +1,4 @@
-# LP Engine 🏭
+# LP Engine 
 
 > **Plataforma industrial para geração automatizada de Landing Pages de alta conversão**, orquestrada por IA Generativa, RAG e Model Context Protocol. Substitui fluxos manuais lentos por uma fábrica assíncrona que entrega uma LP completa — copy, design e publicação — em ~10 segundos.
 
