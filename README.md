@@ -1,4 +1,4 @@
-# LP Engine 🏭
+# LP Engine
 
 > **Plataforma industrial para geração automatizada de Landing Pages de alta conversão**, orquestrada por IA Generativa, RAG e Model Context Protocol. Substitui fluxos manuais lentos por uma fábrica assíncrona que entrega uma LP completa — copy, design e publicação — em ~10 segundos.
 
@@ -77,7 +77,7 @@ Briefing (API) → Fila (BullMQ/Redis) → Worker → RAG (pgvector) → LLM (Gr
 │  1. Chama MCP Server ──────────────────────────────────┐    │
 │  2. RAG: Gemini Embedding → pgvector (cosine < 0.5) ◄──┘    │
 │  3. Prompt XML-tagged → Groq (Llama 4 Scout 17B)            │
-│  4. JSON → HTML/CSS Assembly ("Ultra Edition")              │
+│  4. JSON → HTML/CSS Assembly                                │
 │  5. Atualiza status → PREVIEW_READY                         │
 └──────────────────────────────────────────────────────────────┘
            │
@@ -197,11 +197,11 @@ Acesse `http://localhost:3002` para abrir o Dashboard.
 
 | Variável | Descrição | Obrigatório |
 |---|---|---|
-| `DATABASE_URL` | Connection string do PostgreSQL | ✅ |
-| `REDIS_URL` | Connection string do Redis | ✅ |
-| `GROQ_API_KEY` | Chave da API Groq (LLM) | ✅ |
-| `GEMINI_API_KEY` | Chave da API Gemini (Embeddings) | ✅ |
-| `NODE_ENV` | `development` ou `production` | ✅ |
+| `DATABASE_URL` | Connection string do PostgreSQL | Sim |
+| `REDIS_URL` | Connection string do Redis | Sim |
+| `GROQ_API_KEY` | Chave da API Groq (LLM) | Sim |
+| `GEMINI_API_KEY` | Chave da API Gemini (Embeddings) | Sim |
+| `NODE_ENV` | `development` ou `production` | Sim |
 
 > **Nunca commite o `.env`.** Veja a seção [Segurança](#segurança).
 

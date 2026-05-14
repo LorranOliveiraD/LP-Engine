@@ -1,7 +1,10 @@
+/**
+ * @module ProvedorIA
+ * Lógica central de LLM e Embeddings. Usa Groq para geração e Gemini para embeddings.
+ */
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import Groq from 'groq-sdk'
 
-// Configuração Gemini (Apenas para Embeddings agora)
 const rawGeminiKey = process.env.GEMINI_API_KEY || 'dummy_key'
 const genAI = new GoogleGenerativeAI(rawGeminiKey.trim())
 const embeddingModel = genAI.getGenerativeModel({ model: 'gemini-embedding-2' })
@@ -21,7 +24,7 @@ export interface GenerateLandingPageParams {
 }
 
 /**
- * Gera a estrutura da Landing Page no formato JSON usando Groq (Llama 4).
+ * Gera a estrutura de conteúdo da Landing Page em formato JSON usando Groq (Llama 4).
  */
 export async function generateLandingPageContent(params: GenerateLandingPageParams) {
   try {
@@ -91,7 +94,7 @@ Retorne ESTRITAMENTE um objeto JSON válido seguindo exatamente esta estrutura:
 }
 
 /**
- * Gera embeddings para um texto usando o Gemini (que ainda tem cota).
+ * Gera embeddings de texto usando o Gemini 2.
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
   const result = await embeddingModel.embedContent(text)

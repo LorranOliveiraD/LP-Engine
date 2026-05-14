@@ -32,9 +32,9 @@ const mcpTransport = new StdioClientTransport({
 const mcpClient = new Client({ name: 'worker-client', version: '1.0.0' }, { capabilities: {} })
 
 mcpClient.connect(mcpTransport).then(() => {
-  log.info('Conectado ao Servidor MCP com sucesso!')
+  log.info('Servidor MCP conectado com sucesso')
 }).catch((err) => {
-  log.error('Falha ao conectar no Servidor MCP', { error: err.message })
+  log.error('Falha na conexão com o MCP', { error: err.message })
 })
 
 log.info('Worker iniciado', { queue: BRIEFING_QUEUE_NAME })
@@ -180,7 +180,7 @@ export async function processBriefingJob(job: Job<BriefingJobData>): Promise<voi
     })
   } catch (err) {
     const error = err as Error
-    jobLog.error('🔥 ERRO CRÍTICO NO JOB:', {
+    jobLog.error('ERRO CRÍTICO NO JOB:', {
       message: error.message,
       stack: error.stack,
       event: 'job_crash'
@@ -207,10 +207,14 @@ const worker = new Worker<BriefingJobData>(
   { connection: redisConnection, concurrency: 5 }
 )
 
+worker.on('ready', () => {
+  log.info('Worker pronto e ouvindo a fila', { service: 'worker', queue: BRIEFING_QUEUE_NAME })
+})
+
 worker.on('completed', (job) => {
   briefingJobsProcessedTotal.inc()
   updateQueueSizeMetric()
-  log.info('Job finalizado com sucesso pelo Worker', {
+  log.info('Job processado com sucesso', {
     event: 'worker_completed',
     jobId: String(job.id),
   })
@@ -219,7 +223,7 @@ worker.on('completed', (job) => {
 worker.on('failed', (job, err) => {
   briefingJobsFailedTotal.inc()
   updateQueueSizeMetric()
-  log.error('Job falhou', {
+  log.error('Falha no processamento do job', {
     event: 'job_failed',
     jobId: String(job?.id),
     attempt: job?.attemptsMade,
@@ -227,7 +231,7 @@ worker.on('failed', (job, err) => {
   })
 
   if (job && job.attemptsMade >= (job.opts.attempts ?? 3)) {
-    log.warn('Job esgotou todas as tentativas — movido para Dead Letter Queue', {
+    log.warn('Job movido para a Dead Letter Queue (DLQ)', {
       event: 'job_dlq',
       jobId: String(job.id),
       briefingId: job.data.briefingId,
@@ -237,31 +241,6 @@ worker.on('failed', (job, err) => {
 
 worker.on('error', (err) => {
   log.error('Erro crítico no Worker', { event: 'worker_error', error: err.message })
-})
-
-const shutdown = async () => {
-  log.info('Worker encerrando gracefully...', { event: 'shutdown' })
-  clearInterval(metricsInterval)
-  await worker.close()
-  await prisma.$disconnect()
-  process.exit(0)
-}
-
-worker.on('ready', () => {
-  log.info('Worker do BullMQ está pronto e ouvindo a fila!', { service: 'worker' })
-})
-
-worker.on('error', (err) => {
-  log.error('Erro crítico no Worker do BullMQ:', { service: 'worker', error: err.message })
-})
-
-worker.on('failed', (job, err) => {
-  log.error('Job falhou permanentemente:', { 
-    service: 'worker', 
-    jobId: job?.id, 
-    error: err.message,
-    event: 'job_failed'
-  })
 })
 
 process.on('SIGTERM', shutdown)

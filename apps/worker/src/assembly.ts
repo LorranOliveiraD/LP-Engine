@@ -1,6 +1,6 @@
 /**
- * Page Assembly Engine — LP Engine (Ultra Edition)
- * Transforma o JSON estruturado da IA em HTML/CSS Premium.
+ * @module MotorDeMontagem
+ * Transforma o JSON estruturado da IA em HTML/CSS de alta fidelidade usando glassmorphism.
  */
 
 interface LPContent {
@@ -34,7 +34,7 @@ export function assembleHtml(content: LPContent): string {
     .map(
       (f) => `
     <div class="feature-card">
-      <div class="icon-box">✦</div>
+      <div class="icon-box">></div>
       <h3>${f.title}</h3>
       <p>${f.description}</p>
     </div>
@@ -69,7 +69,7 @@ export function assembleHtml(content: LPContent): string {
 
   const guaranteeHtml = guarantee ? `
     <section class="guarantee">
-      <div class="guarantee-badge">✓</div>
+      <div class="guarantee-badge">!</div>
       <h2>${guarantee.title}</h2>
       <p>${guarantee.text}</p>
     </section>
