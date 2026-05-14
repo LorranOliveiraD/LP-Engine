@@ -31,9 +31,12 @@ test.describe('Fluxo Principal de Geração de LP', () => {
     await expect(page).toHaveURL(/\/briefings\/[0-9a-f-]+/);
 
     // 5. Acompanha o status (Polling)
-    // Esperamos que o status mude para PREVIEW_READY em algum momento
-    // O Playwright vai tentar encontrar esse texto repetidamente até o timeout
     const statusBadge = page.locator('.status-badge');
+    
+    // Se o status mudar para FAILED, o teste deve quebrar imediatamente
+    await expect(statusBadge).not.toHaveText('FAILED', { timeout: 120000 });
+    
+    // Esperamos que o status mude para PREVIEW_READY em algum momento
     await expect(statusBadge).toHaveText('PREVIEW_READY', { timeout: 120000 });
 
     // 6. Valida se o link de pré-visualização apareceu

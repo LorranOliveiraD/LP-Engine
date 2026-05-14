@@ -7,7 +7,7 @@ import { prisma } from '@lp-engine/database'
 import { generateEmbedding } from '@lp-engine/ai'
 
 const server = new Server({
-  name: 'genesis-lp-engine-mcp',
+  name: 'lp-engine-mcp',
   version: '1.0.0',
 }, {
   capabilities: {
@@ -56,6 +56,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           content,
           embedding <=> ${embeddingStr}::vector as distance
         FROM "embeddings"
+        WHERE (embedding <=> ${embeddingStr}::vector) < 0.5
         ORDER BY embedding <=> ${embeddingStr}::vector
         LIMIT ${limit}
       `
@@ -92,7 +93,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
   const transport = new StdioServerTransport()
   await server.connect(transport)
-  console.error('🚀 Servidor MCP (Genesis LP Engine) iniciado!')
+  console.error('🚀 Servidor MCP (LP Engine) iniciado!')
 }
 
 main().catch(console.error)

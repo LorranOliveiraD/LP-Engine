@@ -1,10 +1,10 @@
 version: '3.8'
 
 services:
-  # Redis para Fila (Mantemos local por performance e custo)
+  # Redis para Fila
   redis:
     image: redis:7-alpine
-    container_name: genesis_redis_prod
+    container_name: lp_engine_redis_prod
     ports:
       - "6379:6379"
     volumes:
@@ -16,14 +16,14 @@ services:
     build:
       context: ..
       dockerfile: apps/api/Dockerfile
-    container_name: genesis_api_prod
+    container_name: lp_engine_api_prod
     environment:
-      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}?schema=public
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/${DB_NAME}?schema=public
       PORT: 3000
     ports:
       - "3000:3000"
     depends_on:
-      - postgres
+      - redis
     restart: always
 
   # Worker de IA
@@ -31,14 +31,14 @@ services:
     build:
       context: ..
       dockerfile: apps/worker/Dockerfile
-    container_name: genesis_worker_prod
+    container_name: lp_engine_worker_prod
     environment:
       DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/${DB_NAME}?schema=public
       REDIS_HOST: redis
       REDIS_PORT: 6379
       GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GROQ_API_KEY: ${GROQ_API_KEY}
     depends_on:
-      - postgres
       - redis
     restart: always
 
@@ -47,7 +47,7 @@ services:
     build:
       context: ..
       dockerfile: apps/dashboard/Dockerfile
-    container_name: genesis_dashboard_prod
+    container_name: lp_engine_dashboard_prod
     environment:
       DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/${DB_NAME}?schema=public
     ports:
@@ -56,5 +56,32 @@ services:
       - api
     restart: always
 
+  # --- Observabilidade (Dia 36-37) ---
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: lp_engine_prometheus_prod
+    volumes:
+      - ../infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data_prod:/prometheus
+    ports:
+      - "9090:9090"
+    restart: always
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: lp_engine_grafana_prod
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_SERVER_HTTP_PORT=3001
+    volumes:
+      - grafana_data_prod:/var/lib/grafana
+    ports:
+      - "3001:3001"
+    depends_on:
+      - prometheus
+    restart: always
+
 volumes:
   redis_data_prod:
+  prometheus_data_prod:
+  grafana_data_prod:

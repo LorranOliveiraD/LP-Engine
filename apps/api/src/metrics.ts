@@ -26,13 +26,13 @@ export const httpRequestDurationSeconds = new Histogram({
 
 // ── Métricas do Worker ────────────────────────────────────────────────────────
 
-export const briefingJobsProcessedTotal = new Counter({
+export const briefingJobsProcessedTotal = new Gauge({
   name: 'briefing_jobs_processed_total',
   help: 'Total de briefings processados com sucesso pelo Worker',
   registers: [register],
 })
 
-export const briefingJobsFailedTotal = new Counter({
+export const briefingJobsFailedTotal = new Gauge({
   name: 'briefing_jobs_failed_total',
   help: 'Total de briefings que falharam no Worker',
   registers: [register],

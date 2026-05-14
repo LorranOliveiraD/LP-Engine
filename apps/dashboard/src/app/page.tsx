@@ -52,7 +52,7 @@ export default function Home() {
   return (
     <div className="dashboard-container">
       <header className="header">
-        <div className="logo-text">Gênesis LP Engine</div>
+        <div className="logo-text">LP Engine</div>
         <Link href="/briefings/new">
           <button className="button-primary">+ Novo Briefing</button>
         </Link>

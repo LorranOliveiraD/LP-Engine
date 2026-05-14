@@ -62,8 +62,8 @@
 *Objetivo: Provar a arquitetura na AWS e garantir que o pipeline faz o deploy automático do código limpo.*
 
 - [x] **Dia 31-33:** Pipeline de CD (Continuous Deployment). Fazer o GitHub Actions atualizar o código na instância EC2 via SSH/Docker ao sofrer merge na `main`.
-- [ ] **Dia 34-35:** Configurar a comunicação segura (Security Groups) entre a EC2 e o RDS provisionados pelo Terraform.
-- [ ] **Dia 36-37:** Deploy da stack de Observabilidade na nuvem (Prometheus e Grafana acessíveis via IP/Domínio).
-- [ ] **Dia 38:** Teste de Stress Simulado (Artillery/K6) monitorando os gargalos no Grafana.
-- [ ] **Dia 39:** Documentação final do Repositório (README de alto nível, instruções para rodar o Terraform).
+- [x] **Dia 34-35:** Configurar a comunicação segura (Security Groups) entre a EC2 e o RDS provisionados pelo Terraform.
+- [x] **Dia 36-37:** Deploy da stack de Observabilidade na nuvem (Prometheus e Grafana acessíveis via IP/Domínio).
+- [x] **Dia 38:** Teste de Stress Simulado (Artillery/K6) monitorando os gargalos no Grafana.
+- [x] **Dia 39:** Documentação final do Repositório (README de alto nível, instruções para rodar o Terraform).
 - [ ] **Dia 40 - GOLIVE:** Apresentação da arquitetura. Gravação de demonstração em vídeo do pipeline funcionando e da inteligência operando sem custos de nuvem recorrentes.

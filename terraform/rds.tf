@@ -14,7 +14,7 @@ resource "aws_db_instance" "postgres" {
   engine               = "postgres"
   engine_version       = "16"
   instance_class       = "db.t3.micro" # Modalidade Gratuita
-  username             = "genesis_admin"
+  username             = "lp_engine_admin"
   password             = var.db_password
   parameter_group_name = "default.postgres16"
   skip_final_snapshot  = true

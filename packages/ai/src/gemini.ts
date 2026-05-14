@@ -1,14 +1,15 @@
-import { GoogleGenerativeAI, Schema, SchemaType } from '@google/generative-ai'
+import { GoogleGenerativeAI } from '@google/generative-ai'
+import Groq from 'groq-sdk'
 
-const rawKey = process.env.GEMINI_API_KEY || 'dummy_key'
-const apiKey = rawKey.trim()
-const genAI = new GoogleGenerativeAI(apiKey)
+// Configuração Gemini (Apenas para Embeddings agora)
+const rawGeminiKey = process.env.GEMINI_API_KEY || 'dummy_key'
+const genAI = new GoogleGenerativeAI(rawGeminiKey.trim())
+const embeddingModel = genAI.getGenerativeModel({ model: 'gemini-embedding-2' })
 
-// Usando o modelo descoberto via cURL: gemini-flash-latest
-const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' })
-
-// Modelo de Embeddings padrão
-const embeddingModel = genAI.getGenerativeModel({ model: 'text-embedding-004' })
+// Configuração Groq (Para Geração de Conteúdo)
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+})
 
 // Tipagem para os parâmetros de geração de LP
 export interface GenerateLandingPageParams {
@@ -19,75 +20,80 @@ export interface GenerateLandingPageParams {
   ragContext?: string // Conteúdo similar recuperado do banco
 }
 
-// O schema JSON que queremos que o Gemini retorne
-const landingPageSchema: Schema = {
-  type: SchemaType.OBJECT,
-  properties: {
-    headline: {
-      type: SchemaType.STRING,
-      description: 'Um título impactante e persuasivo (máx 12 palavras)',
-    },
-    subheadline: {
-      type: SchemaType.STRING,
-      description: 'Um subtítulo que explica a proposta de valor (máx 20 palavras)',
-    },
-    cta: {
-      type: SchemaType.STRING,
-      description: 'Texto do botão de Call to Action (ex: Comece Agora)',
-    },
-    features: {
-      type: SchemaType.ARRAY,
-      description: 'Lista de 3 a 4 benefícios ou características principais',
-      items: {
-        type: SchemaType.OBJECT,
-        properties: {
-          title: { type: SchemaType.STRING },
-          description: { type: SchemaType.STRING }
-        },
-        required: ['title', 'description']
-      }
-    }
-  },
-  required: ['headline', 'subheadline', 'cta', 'features'],
-}
-
 /**
- * Gera a estrutura da Landing Page no formato JSON.
+ * Gera a estrutura da Landing Page no formato JSON usando Groq (Llama 4).
  */
 export async function generateLandingPageContent(params: GenerateLandingPageParams) {
-  let prompt = `Você é um copywriter de elite especialista em criar Landing Pages de alta conversão.
+  try {
+    let prompt = `Você é um copywriter de elite especialista em criar Landing Pages de alta conversão.
 Crie a copy para uma landing page do tipo: ${params.type}
 Objetivo: ${params.objective}
 Público-alvo: ${params.targetAudience}
 Tom de voz: ${params.tone}
 
-Retorne ESTRITAMENTE o JSON com a estrutura da página.
+Retorne ESTRITAMENTE um objeto JSON válido seguindo exatamente esta estrutura:
+{
+  "design_tokens": {
+    "primary_color": "hex code",
+    "secondary_color": "hex code",
+    "font_family": "serif ou sans-serif"
+  },
+  "headline": "título impactante",
+  "subheadline": "subtítulo persuasivo",
+  "cta": "texto do botão",
+  "features": [
+    {"title": "benefício 1", "description": "detalhe 1"},
+    {"title": "benefício 2", "description": "detalhe 2"},
+    {"title": "benefício 3", "description": "detalhe 3"}
+  ],
+  "testimonials": [
+    {"name": "nome do cliente", "text": "depoimento curto", "role": "quem ele é"}
+  ],
+  "faq": [
+    {"question": "pergunta comum", "answer": "resposta curta"}
+  ],
+  "guarantee": {
+    "title": "título da garantia",
+    "text": "texto sobre os dias de reembolso"
+  }
+}
 `
 
-  if (params.ragContext) {
-    prompt += `\nUse as seguintes landing pages de sucesso como INSPIRAÇÃO (não copie, apenas adapte o estilo):\n${params.ragContext}`
-  }
-
-  const result = await model.generateContent({
-    contents: [{ role: 'user', parts: [{ text: prompt }] }],
-    generationConfig: {
-      responseMimeType: 'application/json',
-      responseSchema: landingPageSchema
+    if (params.ragContext) {
+      prompt += `\n<contexto_mcp>\nUse as seguintes landing pages de sucesso como INSPIRAÇÃO:\n${params.ragContext}\n</contexto_mcp>`
     }
-  })
 
-  const text = result.response.text()
-  return JSON.parse(text)
+    const completion = await groq.chat.completions.create({
+      model: "meta-llama/llama-4-scout-17b-16e-instruct",
+      messages: [
+        {
+          role: "system",
+          content: "Você é um especialista em marketing. Retorne EXCLUSIVAMENTE um JSON válido com a estrutura da Landing Page. Não adicione nenhum texto antes ou depois do JSON."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.5,
+      max_completion_tokens: 1024,
+      top_p: 1,
+    });
+
+    const jsonString = completion.choices[0]?.message?.content || "{}";
+    return JSON.parse(jsonString);
+
+  } catch (error) {
+    console.error("Erro na geração com Groq:", error);
+    throw error;
+  }
 }
 
 /**
- * Gera embeddings para um texto. Retorna um array de 3072 floats.
+ * Gera embeddings para um texto usando o Gemini (que ainda tem cota).
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
-  const result = await embeddingModel.embedContent({
-    content: { role: 'user', parts: [{ text }] },
-    taskType: 'RETRIEVAL_DOCUMENT',
-    outputDimensionality: 3072
-  })
+  const result = await embeddingModel.embedContent(text)
   return result.embedding.values
 }

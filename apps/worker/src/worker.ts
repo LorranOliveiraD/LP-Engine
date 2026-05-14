@@ -21,8 +21,8 @@ const log = createLogger({ service: 'worker' })
 
 // Inicializa o Cliente MCP apontando para o nosso servidor MCP local
 const mcpTransport = new StdioClientTransport({
-  command: 'npx',
-  args: ['tsx', path.resolve(__dirname, '../../mcp/src/index.ts')],
+  command: process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm',
+  args: ['--filter', '@lp-engine/mcp', 'exec', 'tsx', path.resolve(__dirname, '../../mcp/src/index.ts')],
   env: {
     ...process.env, // propaga todas as variáveis carregadas pelo dotenv
     GEMINI_API_KEY: process.env.GEMINI_API_KEY ?? '',
@@ -81,17 +81,25 @@ export async function processBriefingJob(job: Job<BriefingJobData>): Promise<voi
     jobLog.info('Conectando ao MCP Server para buscar histórico...', { event: 'mcp_connect' })
     let ragContext = 'Nenhum contexto histórico encontrado.'
     try {
-      const mcpResult = await mcpClient.callTool({
-        name: 'query_knowledge_base',
-        arguments: {
-          query: `${objective} para ${targetAudience} tom ${tone}`,
-          limit: 2
-        }
-      })
+      // Adiciona um timeout de 15 segundos para a busca no RAG
+      const mcpResult = await Promise.race([
+        mcpClient.callTool({
+          name: 'query_knowledge_base',
+          arguments: {
+            query: `${objective} para ${targetAudience} tom ${tone}`,
+            limit: 2
+          }
+        }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('MCP Timeout')), 15000))
+      ]) as any
+      
       ragContext = (mcpResult.content[0] as { text: string }).text
       jobLog.info('RAG concluído com sucesso', { event: 'mcp_success' })
     } catch (error) {
-      jobLog.warn('Falha ao conectar no Servidor MCP ou RAG vazio', { event: 'mcp_error', error: (error as Error).message })
+      jobLog.warn('Falha ao conectar no Servidor MCP ou RAG vazio/timeout', { 
+        event: 'mcp_error', 
+        error: (error as Error).message 
+      })
       // Worker não deve falhar se o MCP estiver offline (resiliência)
     }
 
@@ -133,7 +141,7 @@ export async function processBriefingJob(job: Job<BriefingJobData>): Promise<voi
     // Simula latência de rede/deploy (1.5s)
     await new Promise(resolve => setTimeout(resolve, 1500))
     
-    const simulatedUrl = `https://preview.genesis-engine.ai/lp/${briefingId.split('-')[0]}`
+    const simulatedUrl = `https://preview.lp-engine.ai/lp/${briefingId.split('-')[0]}`
     jobLog.info('Deploy concluído (simulado)', { event: 'deploy_success', url: simulatedUrl })
 
     // 5. Salva no banco de dados na tabela LandingPage
@@ -177,6 +185,18 @@ export async function processBriefingJob(job: Job<BriefingJobData>): Promise<voi
       stack: error.stack,
       event: 'job_crash'
     })
+
+    // IMPORTANTE: Atualiza o status do briefing para FAILED para que o usuário não fique esperando infinitamente
+    try {
+      await prisma.briefing.update({
+        where: { id: briefingId },
+        data: { status: 'FAILED' }
+      })
+      jobLog.info('Status do briefing atualizado para FAILED', { event: 'status_changed', status: 'FAILED' })
+    } catch (dbErr) {
+      jobLog.error('Erro ao tentar marcar briefing como FAILED no banco', { error: (dbErr as Error).message })
+    }
+
     throw err // Importante dar o throw para o BullMQ saber que falhou
   }
 }

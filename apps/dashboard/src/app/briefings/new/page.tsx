@@ -72,7 +72,7 @@ export default function NewBriefing() {
   return (
     <div className="dashboard-container">
       <header className="header">
-        <div className="logo-text">Gênesis LP Engine</div>
+        <div className="logo-text">LP Engine</div>
         <Link href="/" className="button-primary" style={{ background: 'transparent', border: '1px solid var(--border)' }}>
           Cancelar
         </Link>

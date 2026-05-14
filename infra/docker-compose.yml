@@ -3,24 +3,24 @@ version: '3.8'
 services:
   postgres:
     image: pgvector/pgvector:pg16
-    container_name: genesis_postgres
+    container_name: lp_engine_postgres
     environment:
-      POSTGRES_USER: genesis
-      POSTGRES_PASSWORD: genesis
-      POSTGRES_DB: genesis
+      POSTGRES_USER: lp_engine
+      POSTGRES_PASSWORD: lp_engine
+      POSTGRES_DB: lp_engine
     ports:
       - "5432:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U genesis"]
+      test: ["CMD-SHELL", "pg_isready -U lp_engine"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   redis:
     image: redis:7-alpine
-    container_name: genesis_redis
+    container_name: lp_engine_redis
     ports:
       - "6379:6379"
     volumes:
@@ -33,17 +33,18 @@ services:
 
   prometheus:
     image: prom/prometheus:latest
-    container_name: genesis_prometheus
+    container_name: lp_engine_prometheus
     ports:
       - "9090:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
+    restart: always
 
   grafana:
     image: grafana/grafana:latest
-    container_name: genesis_grafana
+    container_name: lp_engine_grafana
     ports:
       - "3001:3000"
     environment:
@@ -55,6 +56,7 @@ services:
       - ./grafana/dashboards:/var/lib/grafana/dashboards
     depends_on:
       - prometheus
+    restart: always
 
 volumes:
   pg_data:

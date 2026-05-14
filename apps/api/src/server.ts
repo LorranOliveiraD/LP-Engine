@@ -11,7 +11,11 @@ import {
   register,
   httpRequestsTotal,
   httpRequestDurationSeconds,
+  briefingQueueSize,
+  briefingJobsProcessedTotal,
+  briefingJobsFailedTotal
 } from './metrics'
+import { briefingQueue } from '@lp-engine/queue'
 
 export const app = Fastify({ logger: true })
 
@@ -66,6 +70,16 @@ app.get('/health', async () => {
 
 // Rota de Métricas (lida pelo Prometheus a cada 15s)
 app.get('/metrics', async (request, reply) => {
+  // Atualiza métricas da fila em tempo real antes de responder
+  try {
+    const counts = await briefingQueue.getJobCounts('wait', 'active', 'completed', 'failed', 'delayed')
+    briefingQueueSize.set(counts.wait + counts.active)
+    briefingJobsProcessedTotal.set(counts.completed)
+    briefingJobsFailedTotal.set(counts.failed)
+  } catch (err) {
+    app.log.error(err, 'Erro ao coletar métricas da fila')
+  }
+
   reply.header('Content-Type', register.contentType)
   return reply.send(await register.metrics())
 })

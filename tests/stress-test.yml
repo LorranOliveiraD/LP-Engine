@@ -1,0 +1,39 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 20
+      arrivalRate: 2
+      name: "Warm up (Aquecimento)"
+    - duration: 30
+      arrivalRate: 5
+      rampTo: 15
+      name: "Ramp up (Aumento de carga)"
+    - duration: 20
+      arrivalRate: 20
+      name: "Cruising (Carga sustentada)"
+  
+  # Payload para simular briefings reais
+  payload:
+    path: "./briefings-payload.csv"
+    fields:
+      - "clientId"
+      - "objective"
+      - "targetAudience"
+  
+scenarios:
+  - name: "Fluxo de Criação de Briefing"
+    flow:
+      - post:
+          url: "/briefings"
+          json:
+            clientId: "{{ clientId }}"
+            type: "SERVICO"
+            objective: "{{ objective }}"
+            targetAudience: "{{ targetAudience }}"
+            tone: "INSPIRACIONAL"
+          capture:
+            - json: "$.briefingId"
+              as: "id"
+      - think: 1 # Simula o usuário esperando 1s
+      - get:
+          url: "/briefings/{{ id }}/status"

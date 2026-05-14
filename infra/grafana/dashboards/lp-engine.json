@@ -31,7 +31,7 @@
       "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } },
       "targets": [
         {
-          "expr": "sum by (route, method) (rate(http_requests_total{job=\"genesis-api\"}[1m]))",
+          "expr": "sum by (route, method) (rate(http_requests_total{job=\"lp-engine-api\"}[1m]))",
           "legendFormat": "{{method}} {{route}}",
           "refId": "A"
         }
@@ -61,12 +61,12 @@
       "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } },
       "targets": [
         {
-          "expr": "histogram_quantile(0.99, sum by (le, route) (rate(http_request_duration_seconds_bucket{job=\"genesis-api\"}[5m])))",
+          "expr": "histogram_quantile(0.99, sum by (le, route) (rate(http_request_duration_seconds_bucket{job=\"lp-engine-api\"}[5m])))",
           "legendFormat": "p99 {{route}}",
           "refId": "A"
         },
         {
-          "expr": "histogram_quantile(0.50, sum by (le, route) (rate(http_request_duration_seconds_bucket{job=\"genesis-api\"}[5m])))",
+          "expr": "histogram_quantile(0.50, sum by (le, route) (rate(http_request_duration_seconds_bucket{job=\"lp-engine-api\"}[5m])))",
           "legendFormat": "p50 {{route}}",
           "refId": "B"
         }
@@ -223,7 +223,7 @@
       "id": 7,
       "targets": [
         {
-          "expr": "process_resident_memory_bytes{job=\"genesis-api\"}",
+          "expr": "process_resident_memory_bytes{job=\"lp-engine-api\"}",
           "legendFormat": "API — Memória RSS",
           "refId": "A"
         }
@@ -245,7 +245,7 @@
       "id": 8,
       "targets": [
         {
-          "expr": "rate(process_cpu_seconds_total{job=\"genesis-api\"}[1m])",
+          "expr": "rate(process_cpu_seconds_total{job=\"lp-engine-api\"}[1m])",
           "legendFormat": "API — CPU",
           "refId": "A"
         }
