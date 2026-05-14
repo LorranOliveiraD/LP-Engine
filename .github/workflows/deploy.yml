@@ -22,26 +22,29 @@ jobs:
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # Entra no diretório do projeto ou clona se não existir
-            if [ ! -d "~/lp-engine" ]; then
-              git clone https://github.com/${{ github.repository }}.git ~/lp-engine
+            # Caminho absoluto para o projeto
+            PROJECT_DIR="/home/ubuntu/lp-engine"
+
+            if [ ! -d "$PROJECT_DIR" ]; then
+              git clone https://github.com/${{ github.repository }}.git $PROJECT_DIR
             fi
             
-            cd ~/lp-engine
+            cd $PROJECT_DIR
             git fetch origin main
             git reset --hard origin/main
             
-            # Cria o arquivo .env para o Docker Compose
+            # Garante que o arquivo .env existe e tem as chaves
             cat <<EOF > .env
             GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
+            GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}
             DB_HOST=${{ secrets.RDS_ENDPOINT }}
             DB_USER=postgres
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
             DB_NAME=postgres
             EOF
             
-            # Sobe a stack de produção
-            docker-compose -f infra/docker-compose.prod.yml up -d --build
+            # Sobe a stack com permissão de superusuário se necessário
+            sudo docker-compose -f infra/docker-compose.prod.yml up -d --build
             
-            # Limpa imagens antigas para economizar espaço no Free Tier
-            docker image prune -f
+            # Limpeza de recursos órfãos
+            sudo docker image prune -f
