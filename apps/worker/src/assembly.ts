@@ -1,6 +1,6 @@
 /**
- * @module MotorDeMontagem
- * Transforma o JSON estruturado da IA em HTML/CSS de alta fidelidade usando glassmorphism.
+ * Page Assembly Engine — LP Engine (Ultra Edition)
+ * Transforma o JSON estruturado da IA em HTML/CSS Premium.
  */
 
 interface LPContent {
@@ -19,11 +19,11 @@ interface LPContent {
 }
 
 export function assembleHtml(content: LPContent): string {
-  const { 
+  const {
     design_tokens = { primary_color: '#6366f1', secondary_color: '#4f46e5', font_family: 'sans-serif' },
-    headline = 'Título não gerado', 
-    subheadline = 'Subtítulo não disponível', 
-    cta = 'Saiba Mais', 
+    headline = 'Título não gerado',
+    subheadline = 'Subtítulo não disponível',
+    cta = 'Saiba Mais',
     features = [],
     testimonials = [],
     faq = [],
@@ -34,7 +34,7 @@ export function assembleHtml(content: LPContent): string {
     .map(
       (f) => `
     <div class="feature-card">
-      <div class="icon-box">></div>
+      <div class="icon-box">✦</div>
       <h3>${f.title}</h3>
       <p>${f.description}</p>
     </div>
@@ -69,7 +69,7 @@ export function assembleHtml(content: LPContent): string {
 
   const guaranteeHtml = guarantee ? `
     <section class="guarantee">
-      <div class="guarantee-badge">!</div>
+      <div class="guarantee-badge">✓</div>
       <h2>${guarantee.title}</h2>
       <p>${guarantee.text}</p>
     </section>
@@ -77,8 +77,8 @@ export function assembleHtml(content: LPContent): string {
 
   const primaryColor = design_tokens.primary_color || '#6366f1';
   const secondaryColor = design_tokens.secondary_color || '#4f46e5';
-  const fontStack = design_tokens.font_family === 'serif' 
-    ? "'Playfair Display', serif" 
+  const fontStack = design_tokens.font_family === 'serif'
+    ? "'Playfair Display', serif"
     : "'Outfit', sans-serif";
 
   return `

@@ -1,15 +1,12 @@
-/**
- * @module Seed
- * Popula o banco de dados com dados iniciais de teste e embeddings de referência para RAG.
- */
 import 'dotenv/config'
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log('Alimentando o banco de dados...')
+  console.log('🌱 Iniciando seed no banco de dados...')
 
+  // Cria cliente de teste padrão para o Dashboard/E2E
   const testClientId = '8c57fe30-d926-4da3-b07d-254e2dc5f869'
   await prisma.client.upsert({
     where: { id: testClientId },
@@ -22,7 +19,7 @@ async function main() {
       status: 'FECHADO'
     }
   })
-  console.log('Cliente de teste criado.')
+  console.log('✅ Cliente de teste ok.')
 
   const mockTemplates = [
     {
@@ -57,8 +54,8 @@ async function main() {
       const { generateEmbedding } = require('@lp-engine/ai')
       mockEmbedding = await generateEmbedding(t.content)
     } catch (error: any) {
-      console.error('Falha na API do Gemini:', error.message || error)
-      console.warn('Fallback: Gerando embedding aleatorio (3072 dim). Defina GEMINI_API_KEY para embeddings reais.')
+      console.error('❌ Falha na API do Gemini:', error.message || error)
+      console.warn('⚠️ Fallback: Gerando embedding aleatório (3072 dim). Defina GEMINI_API_KEY para embeddings reais.')
       mockEmbedding = Array.from({ length: 3072 }, () => Math.random() * 2 - 1)
     }
 
@@ -70,10 +67,10 @@ async function main() {
     `
   }
 
-  
+
   const count = await prisma.$queryRaw`SELECT count(*) FROM "embeddings"`
-  
-  console.log(`Seed finalizado. LPs de teste adicionadas: ${mockTemplates.length}`)
+
+  console.log(`✅ Seed concluído com sucesso. LPs de teste adicionadas: ${mockTemplates.length}`)
 }
 
 main()

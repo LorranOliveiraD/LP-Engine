@@ -32,9 +32,9 @@ const mcpTransport = new StdioClientTransport({
 const mcpClient = new Client({ name: 'worker-client', version: '1.0.0' }, { capabilities: {} })
 
 mcpClient.connect(mcpTransport).then(() => {
-  log.info('Servidor MCP conectado com sucesso')
+  log.info('Conectado ao Servidor MCP com sucesso!')
 }).catch((err) => {
-  log.error('Falha na conexão com o MCP', { error: err.message })
+  log.error('Falha ao conectar no Servidor MCP', { error: err.message })
 })
 
 log.info('Worker iniciado', { queue: BRIEFING_QUEUE_NAME })
@@ -92,20 +92,20 @@ export async function processBriefingJob(job: Job<BriefingJobData>): Promise<voi
         }),
         new Promise((_, reject) => setTimeout(() => reject(new Error('MCP Timeout')), 15000))
       ]) as any
-      
+
       ragContext = (mcpResult.content[0] as { text: string }).text
       jobLog.info('RAG concluído com sucesso', { event: 'mcp_success' })
     } catch (error) {
-      jobLog.warn('Falha ao conectar no Servidor MCP ou RAG vazio/timeout', { 
-        event: 'mcp_error', 
-        error: (error as Error).message 
+      jobLog.warn('Falha ao conectar no Servidor MCP ou RAG vazio/timeout', {
+        event: 'mcp_error',
+        error: (error as Error).message
       })
       // Worker não deve falhar se o MCP estiver offline (resiliência)
     }
 
     // 2. Aciona o Gemini via package @lp-engine/ai
     jobLog.info('Gerando estrutura da Landing Page com Gemini Flash...', { event: 'ai_generation' })
-    
+
     const lpType = job.data.type
 
     const aiStartTime = Date.now()
@@ -140,7 +140,7 @@ export async function processBriefingJob(job: Job<BriefingJobData>): Promise<voi
 
     // Simula latência de rede/deploy (1.5s)
     await new Promise(resolve => setTimeout(resolve, 1500))
-    
+
     const simulatedUrl = `https://preview.lp-engine.ai/lp/${briefingId.split('-')[0]}`
     jobLog.info('Deploy concluído (simulado)', { event: 'deploy_success', url: simulatedUrl })
 
@@ -180,7 +180,7 @@ export async function processBriefingJob(job: Job<BriefingJobData>): Promise<voi
     })
   } catch (err) {
     const error = err as Error
-    jobLog.error('ERRO CRÍTICO NO JOB:', {
+    jobLog.error('🔥 ERRO CRÍTICO NO JOB:', {
       message: error.message,
       stack: error.stack,
       event: 'job_crash'
@@ -207,14 +207,10 @@ const worker = new Worker<BriefingJobData>(
   { connection: redisConnection, concurrency: 5 }
 )
 
-worker.on('ready', () => {
-  log.info('Worker pronto e ouvindo a fila', { service: 'worker', queue: BRIEFING_QUEUE_NAME })
-})
-
 worker.on('completed', (job) => {
   briefingJobsProcessedTotal.inc()
   updateQueueSizeMetric()
-  log.info('Job processado com sucesso', {
+  log.info('Job finalizado com sucesso pelo Worker', {
     event: 'worker_completed',
     jobId: String(job.id),
   })
@@ -223,7 +219,7 @@ worker.on('completed', (job) => {
 worker.on('failed', (job, err) => {
   briefingJobsFailedTotal.inc()
   updateQueueSizeMetric()
-  log.error('Falha no processamento do job', {
+  log.error('Job falhou', {
     event: 'job_failed',
     jobId: String(job?.id),
     attempt: job?.attemptsMade,
@@ -231,7 +227,7 @@ worker.on('failed', (job, err) => {
   })
 
   if (job && job.attemptsMade >= (job.opts.attempts ?? 3)) {
-    log.warn('Job movido para a Dead Letter Queue (DLQ)', {
+    log.warn('Job esgotou todas as tentativas — movido para Dead Letter Queue', {
       event: 'job_dlq',
       jobId: String(job.id),
       briefingId: job.data.briefingId,
@@ -241,6 +237,31 @@ worker.on('failed', (job, err) => {
 
 worker.on('error', (err) => {
   log.error('Erro crítico no Worker', { event: 'worker_error', error: err.message })
+})
+
+const shutdown = async () => {
+  log.info('Worker encerrando gracefully...', { event: 'shutdown' })
+  clearInterval(metricsInterval)
+  await worker.close()
+  await prisma.$disconnect()
+  process.exit(0)
+}
+
+worker.on('ready', () => {
+  log.info('Worker do BullMQ está pronto e ouvindo a fila!', { service: 'worker' })
+})
+
+worker.on('error', (err) => {
+  log.error('Erro crítico no Worker do BullMQ:', { service: 'worker', error: err.message })
+})
+
+worker.on('failed', (job, err) => {
+  log.error('Job falhou permanentemente:', {
+    service: 'worker',
+    jobId: job?.id,
+    error: err.message,
+    event: 'job_failed'
+  })
 })
 
 process.on('SIGTERM', shutdown)

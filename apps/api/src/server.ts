@@ -19,12 +19,13 @@ import { briefingQueue } from '@lp-engine/queue'
 
 export const app = Fastify({ logger: true })
 
-// Plugins de Segurança
-app.register(cors, { 
+// Plugins de segurança
+app.register(cors, {
   origin: ['http://127.0.0.1:3002', 'http://localhost:3002'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 })
+// app.register(helmet)
 
 // Setup da Documentação da API (Swagger/OpenAPI)
 app.register(swagger, {
@@ -42,6 +43,7 @@ app.register(swagger, {
 app.register(swaggerUi, { routePrefix: '/docs' })
 
 app.addHook('onRequest', async (request) => {
+  app.log.info({ method: request.method, url: request.url }, 'Requisição recebida')
   request.startTime = Date.now()
 })
 
@@ -61,7 +63,7 @@ app.addHook('onResponse', async (request, reply) => {
 app.register(briefingRoutes)
 app.register(clientRoutes)
 
-// Verificação de saúde da API (Health Check)
+// Rota de Health Check
 app.get('/health', async () => {
   return { status: 'ok', message: 'LP Engine API is running' }
 })

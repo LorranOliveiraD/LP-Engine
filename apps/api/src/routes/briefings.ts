@@ -4,10 +4,7 @@ import { prisma } from '@lp-engine/database'
 import { briefingQueue } from '@lp-engine/queue'
 
 export async function briefingRoutes(app: FastifyInstance) {
-  /**
-   * POST /briefings
-   * Envia um novo briefing para a fila de processamento.
-   */
+  // ── POST /briefings ──────────────────────────────────────────────
   app.post('/briefings', {
     schema: {
       tags: ['Briefings'],
@@ -29,7 +26,7 @@ export async function briefingRoutes(app: FastifyInstance) {
   }, async (request, reply) => {
     app.log.info({ body: request.body }, 'Recebendo novo briefing')
     const parsed = BriefingSchema.safeParse(request.body)
- 
+
     if (!parsed.success) {
       app.log.warn({ errors: parsed.error.format() }, 'Erro de validação no briefing')
       return reply.status(400).send({
@@ -72,7 +69,7 @@ export async function briefingRoutes(app: FastifyInstance) {
         data: { jobId: job.id }
       })
 
-      app.log.info(`Job ${job.id} adicionado a fila para briefingId: ${briefing.id}`)
+      app.log.info(`📨 Job ${job.id} adicionado à fila para briefingId: ${briefing.id}`)
 
       return reply.status(202).send({
         status: 'accepted',
@@ -86,10 +83,7 @@ export async function briefingRoutes(app: FastifyInstance) {
     }
   })
 
-  /**
-   * GET /briefings
-   * Lista os 20 briefings mais recentes.
-   */
+  // ── GET /briefings ────────────────────────────────────────────────
   app.get('/briefings', {
     schema: {
       tags: ['Briefings'],
@@ -117,10 +111,7 @@ export async function briefingRoutes(app: FastifyInstance) {
     }
   })
 
-  /**
-   * GET /briefings/:id/status
-   * Consulta o status atual de processamento e metadados.
-   */
+  // ── GET /briefings/:id/status ─────────────────────────────────────
   app.get('/briefings/:id/status', {
     schema: {
       tags: ['Briefings'],
@@ -185,10 +176,7 @@ export async function briefingRoutes(app: FastifyInstance) {
     }
   })
 
-  /**
-   * GET /briefings/:id/preview
-   * Retorna o HTML gerado para visualização no navegador.
-   */
+  // ── GET /briefings/:id/preview ────────────────────────────────────
   app.get('/briefings/:id/preview', {
     schema: {
       tags: ['Briefings'],

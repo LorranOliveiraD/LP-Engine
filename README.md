@@ -1,8 +1,8 @@
-# LP Engine
+# LP Engine 🏭
 
 > **Plataforma industrial para geração automatizada de Landing Pages de alta conversão**, orquestrada por IA Generativa, RAG e Model Context Protocol. Substitui fluxos manuais lentos por uma fábrica assíncrona que entrega uma LP completa — copy, design e publicação — em ~10 segundos.
 
-[![CI/CD](https://github.com/seu-usuario/lp-engine/actions/workflows/deploy.yml/badge.svg)](https://github.com/seu-usuario/lp-engine/actions)
+[![CI/CD](https://github.com/LorranOliveiraD/LP-Engine/actions/workflows/deploy.yml/badge.svg)](https://github.com/LorranOliveiraD/LP-Engine/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-20+-339933?logo=node.js&logoColor=white)](https://nodejs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
@@ -77,7 +77,7 @@ Briefing (API) → Fila (BullMQ/Redis) → Worker → RAG (pgvector) → LLM (Gr
 │  1. Chama MCP Server ──────────────────────────────────┐    │
 │  2. RAG: Gemini Embedding → pgvector (cosine < 0.5) ◄──┘    │
 │  3. Prompt XML-tagged → Groq (Llama 4 Scout 17B)            │
-│  4. JSON → HTML/CSS Assembly                                │
+│  4. JSON → HTML/CSS Assembly ("Ultra Edition")              │
 │  5. Atualiza status → PREVIEW_READY                         │
 └──────────────────────────────────────────────────────────────┘
            │
@@ -197,11 +197,11 @@ Acesse `http://localhost:3002` para abrir o Dashboard.
 
 | Variável | Descrição | Obrigatório |
 |---|---|---|
-| `DATABASE_URL` | Connection string do PostgreSQL | Sim |
-| `REDIS_URL` | Connection string do Redis | Sim |
-| `GROQ_API_KEY` | Chave da API Groq (LLM) | Sim |
-| `GEMINI_API_KEY` | Chave da API Gemini (Embeddings) | Sim |
-| `NODE_ENV` | `development` ou `production` | Sim |
+| `DATABASE_URL` | Connection string do PostgreSQL | ✅ |
+| `REDIS_URL` | Connection string do Redis | ✅ |
+| `GROQ_API_KEY` | Chave da API Groq (LLM) | ✅ |
+| `GEMINI_API_KEY` | Chave da API Gemini (Embeddings) | ✅ |
+| `NODE_ENV` | `development` ou `production` | ✅ |
 
 > **Nunca commite o `.env`.** Veja a seção [Segurança](#segurança).
 
