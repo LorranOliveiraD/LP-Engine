@@ -2,10 +2,23 @@ import { describe, test, expect, vi, beforeEach } from 'vitest'
 import { generateLandingPageContent, generateEmbedding } from '../src/gemini'
 
 // Mock do SDK do Gemini
-const { mockGenerateContent, mockEmbedContent } = vi.hoisted(() => {
+const { mockGenerateContent, mockEmbedContent, mockGroqCreate } = vi.hoisted(() => {
   return {
     mockGenerateContent: vi.fn(),
     mockEmbedContent: vi.fn(),
+    mockGroqCreate: vi.fn(),
+  }
+})
+
+vi.mock('groq-sdk', () => {
+  return {
+    default: vi.fn().mockImplementation(() => ({
+      chat: {
+        completions: {
+          create: mockGroqCreate
+        }
+      }
+    }))
   }
 })
 
@@ -13,7 +26,7 @@ vi.mock('@google/generative-ai', () => {
   return {
     GoogleGenerativeAI: vi.fn().mockImplementation(() => ({
       getGenerativeModel: vi.fn().mockImplementation((config) => {
-        if (config.model === 'text-embedding-004') {
+        if (config.model === 'gemini-embedding-2') {
           return { embedContent: mockEmbedContent }
         }
         return { generateContent: mockGenerateContent }
@@ -40,12 +53,14 @@ describe('Integração Gemini Flash', () => {
       ]
     }
 
-    mockGenerateContent.mockResolvedValue({
-      response: {
-        text: () => JSON.stringify(mockExpectedJson)
-      }
+    mockGroqCreate.mockResolvedValue({
+      choices: [{
+        message: {
+          content: JSON.stringify(mockExpectedJson)
+        }
+      }]
     })
-
+    
     const result = await generateLandingPageContent({
       objective: 'Vender meu novo SaaS de contabilidade',
       targetAudience: 'Contadores e pequenos escritórios',
@@ -53,11 +68,10 @@ describe('Integração Gemini Flash', () => {
       type: 'SAAS'
     })
 
-    expect(mockGenerateContent).toHaveBeenCalledTimes(1)
+    expect(mockGroqCreate).toHaveBeenCalledTimes(1)
     
-    // O prompt enviado deve conter os dados do briefing
-    const callArgs = mockGenerateContent.mock.calls[0][0]
-    const promptText = callArgs.contents[0].parts[0].text
+    const callArgs = mockGroqCreate.mock.calls[0][0]
+    const promptText = callArgs.messages[1].content
     expect(promptText).toContain('Vender meu novo SaaS')
     expect(promptText).toContain('Contadores e pequenos escritórios')
 
@@ -73,14 +87,7 @@ describe('Integração Gemini Flash', () => {
 
     const result = await generateEmbedding('Texto de teste')
 
-    expect(mockEmbedContent).toHaveBeenCalledWith(expect.objectContaining({
-      content: expect.objectContaining({
-        parts: expect.arrayContaining([
-          expect.objectContaining({ text: 'Texto de teste' })
-        ])
-      }),
-      outputDimensionality: 3072
-    }))
+    expect(mockEmbedContent).toHaveBeenCalledWith('Texto de teste')
     expect(result).toHaveLength(3072)
     expect(result[0]).toBe(0.5)
   })
