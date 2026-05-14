@@ -8,7 +8,7 @@ const embeddingModel = genAI.getGenerativeModel({ model: 'gemini-embedding-2' })
 
 // Configuração Groq (Para Geração de Conteúdo)
 const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
+  apiKey: process.env.GROQ_API_KEY || 'dummy_key',
 })
 
 // Tipagem para os parâmetros de geração de LP
